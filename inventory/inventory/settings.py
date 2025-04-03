@@ -13,8 +13,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "change-me")
 # DEBUG
 DEBUG = os.getenv("DEBUG") == "True"
 
-# ALLOWED_HOSTS
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 # DATABASES
 DATABASES = {
