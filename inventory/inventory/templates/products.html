@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Produtos{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <main class="main">
+        <header class="main-header">
+            <h1>Produtos</h1>
+            <div class="actions">
+                <input type="text" placeholder="Search..." />
+                <button class="btn-blue"><i class="icon bi bi-cart-plus"></i>&nbsp;&nbsp; Add Produto</button>
+                <button class="btn-icon"><i class="icon bi bi-search"></i></button>
+                <button class="btn-icon"><i class="icon bi bi-check2-square"></i></button>
+            </div>
+        </header>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Categoria</th>
+                    <th>Marca</th>
+                    <th>Validade</th>
+                    <th>Estoque</th>
+                    <th>Preço</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if produtos %}
+                    {% for p in produtos %}
+                        <tr>
+                            <td>{{ p.item }}</td>
+                            <td>{{ p.categoria }}</td>
+                            <td>{{ p.marca }}</td>
+                            <td>{{ p.validade|date:"d/m/Y" }}</td>
+                            <td>{{ p.estoque }}</td>
+                            <td>R$ {{ p.preco|floatformat:2 }}</td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6">Nenhum produto encontrado.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        
+    </main>
+</div>
+{% endblock %}

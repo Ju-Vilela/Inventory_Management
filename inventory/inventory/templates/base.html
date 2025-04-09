@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>{% block title %}Home{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'css/index.css' %}?v={{ timestamp }}">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}?v={{ timestamp }}">
+</head>
+
+<body class="light">
+    <div class="dashboard">
+        <aside class="sidebar">
+            <button id="themeToggle" class="btn-icon" title="Toggle theme">
+                <i class="fas fa-moon"></i>
+            </button>
+            <nav>
+                <ul>
+                    <li class="active"><i class="icon bi bi-card-checklist"></i> Home</li>
+                    <li><i class="icon bi bi-basket"></i> Products</li>
+                    <li><i class="icon bi bi-bell"></i> Notifications</li>
+                </ul>
+            </nav>
+            <div class="user-profile">
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-blue"><i class="icon bi bi-door-closed"></i>&nbsp; Logout</button>
+                </form>
+            </div>
+        </aside>
+
+        <main class="main">
+            {% block content %}
+            <!-- Os filhos colocam conteúdo aqui -->
+            {% endblock %}
+        </main>
+    </div>
+
+    <script>
+        const toggleBtn = document.getElementById("themeToggle");
+        const body = document.body;
+        const icon = toggleBtn.querySelector("i");
+
+        if (!body.classList.contains("dark")) {
+            body.classList.add("light");
+            icon.classList.remove("fa-moon");
+            icon.classList.add("fa-sun");
+        }
+
+        toggleBtn.addEventListener("click", () => {
+            body.classList.toggle("dark");
+            body.classList.toggle("light");
+
+            if (body.classList.contains("dark")) {
+                icon.classList.remove("fa-sun");
+                icon.classList.add("fa-moon");
+            } else {
+                icon.classList.remove("fa-moon");
+                icon.classList.add("fa-sun");
+            }
+        });
+    </script>
+</body>
+
+</html>

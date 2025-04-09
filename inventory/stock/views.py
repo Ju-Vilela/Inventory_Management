@@ -5,12 +5,16 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from .forms import CustomLoginForm
 from datetime import datetime
+from .models import Produto
 
 @login_required
 def home(request):
-    return render(request, "home.html", {
-        "timestamp": datetime.now().timestamp()
-    })
+    produtos = Produto.objects.all()
+    context = {
+        'produtos': produtos,
+        'timestamp': datetime.now().timestamp()
+    }
+    return render(request, 'home.html', context)
 
 def login_view(request):
     form = AuthenticationForm(request, data=request.POST or None)
@@ -23,3 +27,7 @@ def login_view(request):
 class CustomLoginView(LoginView):
     template_name = 'registration/login.html'
     authentication_form = CustomLoginForm
+
+def lista_produtos(request):
+    produtos = Produto.objects.all().order_by('categoria')
+    return render(request, 'produtos.html', {'produtos': produtos})
