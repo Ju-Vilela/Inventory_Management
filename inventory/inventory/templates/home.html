@@ -1,0 +1,94 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Home</title>
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!--<link rel="stylesheet" type="text/css" href="{% static 'css/index.css' %}">-->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/home.css' %}">
+</head>
+
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="logo">
+                <button id="themeToggle" class="btn-icon" title="Toggle theme">🌙</button>
+            </div>
+
+            <nav>
+                <ul>
+                    <li class="active"><i class="icon">🏠</i> Home</li>
+                    <li><i class="icon">📦</i> Products</li>
+                    <li><i class="icon">📊</i> Statistics</li>
+                    <li><i class="icon">📬</i> Inbox</li>
+                    <li><i class="icon">🔔</i> Notifications</li>
+                </ul>
+            </nav>
+            <div class="user-profile">
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-blue">Logout</button>
+                </form>
+            </div>
+        </aside>
+    
+        <main class="main">
+            <header class="main-header">
+                <h1>Products</h1>
+                <div class="actions">
+                    <input type="text" placeholder="Search..." />
+                    <button class="btn-blue">Add Product</button>
+                    <button class="btn-icon">🔍</button>
+                    <button class="btn-icon">🔲</button>
+                </div>
+            </header>
+    
+            <table class="product-table">
+                <thead>
+                    <tr>
+                        <th>Items</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Sales</th>
+                        <th>Stock</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><img src="https://avatars.githubusercontent.com/u/86087548?v=4" /> Cat</td>
+                        <td>Animal</td>
+                        <td><span class="badge active">Active</span></td>
+                        <td>1</td>
+                        <td>36</td>
+                        <td>$1000</td>
+                    </tr>
+                    <!-- Outras linhas depois -->
+                </tbody>
+            </table>
+        </main>
+    </div>
+
+    <script>
+        const toggleBtn = document.getElementById("themeToggle");
+        const body = document.body;
+
+        // Modo padrão (escuro)
+        if (!body.classList.contains("light")) {
+            body.classList.add("dark");
+        }
+
+        toggleBtn.addEventListener("click", () => {
+            body.classList.toggle("dark");
+            body.classList.toggle("light");
+
+            toggleBtn.textContent = body.classList.contains("dark") ? "🌙" : "☀️";
+        });
+    </script>
+</body>
+
+</html>

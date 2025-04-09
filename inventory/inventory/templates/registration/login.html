@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Login</title>
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/index.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}">
+</head>
+
+<body>
+    <form method="post">
+        {% csrf_token %}
+        <h3>Login Here</h3>
+
+        {{ form.non_field_errors }}
+
+        <label for="{{ form.username.id_for_label }}">Username</label>
+        {{ form.username }}
+
+        <label for="{{ form.password.id_for_label }}">Password</label>
+        {{ form.password }}
+
+        <button type="submit">Log In</button>
+
+        <div class="social">
+            <button type="button" class="go"><i class="fab fa-google"></i> Google</button>
+            <button type="button" class="fb"><i class="fab fa-facebook"></i> Facebook</button>
+        </div>
+    </form>
+</body>
+
+</html>
