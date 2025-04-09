@@ -4,10 +4,13 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from .forms import CustomLoginForm
+from datetime import datetime
 
 @login_required
 def home(request):
-    return render(request, 'home.html')
+    return render(request, "home.html", {
+        "timestamp": datetime.now().timestamp()
+    })
 
 def login_view(request):
     form = AuthenticationForm(request, data=request.POST or None)
