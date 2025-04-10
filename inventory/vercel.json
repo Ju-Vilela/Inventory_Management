@@ -2,7 +2,7 @@
     "version": 2,
     "builds": [
         {
-            "src": "wsgi.py",
+            "src": "inventory/wsgi.py",
             "use": "@vercel/python",
             "config": {
                 "maxLambdaSize": "50mb"
@@ -16,7 +16,7 @@
         },
         {
             "src": "/(.*)",
-            "dest": "wsgi.py"
+            "dest": "inventory/wsgi.py"
         }
     ],
     "buildCommand": "./vercel-build.sh"
