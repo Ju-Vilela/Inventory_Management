@@ -2,6 +2,8 @@ import openpyxl
 from stock.models import Produto
 from datetime import datetime
 
+Produto.objects.all().delete()
+
 # Caminho correto para o arquivo (ajuste se necessário!)
 caminho_arquivo = "stock/DadosIniciais.xlsx"
 
@@ -29,4 +31,4 @@ for row in sheet.iter_rows(min_row=2, values_only=True):
         preco=float(str(preco).replace("R$", "").replace(",", ".")) if preco else 0.0
     )
 
-print("✨ Importação concluída com sucesso! ✨")
+print("Importação concluída com sucesso!")
