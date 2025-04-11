@@ -8,16 +8,165 @@
     padding: 0;
     margin: 0;
     box-sizing: border-box;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 body {
-    background: conic-gradient(from 90deg at 1px 1px, #0000 25%, gainsboro 0%) -0.5px -0.5px/1em 1em,
-        linear-gradient(45deg, #0000 calc(50% + -1*0.5px), gainsboro 0 calc(50% + 0.5px), #0000 0) 0 0/2em 2em,
-        linear-gradient(-45deg, #0000 calc(50% + -1*0.5px), gainsboro 0 calc(50% + 0.5px), #0000 0) 0 0/2em 2em;
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+.dashboard {
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 220px;
+    background-color: #111827;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.3s;
+}
+
+.sidebar li.active,
+.sidebar li:hover {
+    background-color: #1f2937;
+}
+
+.main {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+i {
+    font-size: 15px;
 }
 
 .btn-blue {
     background-color: var(--main-color);
     color: white;
     cursor: pointer;
+}
+
+.btn-icon {
+    background-color: #1e293b;
+    border: none;
+    padding: 10px;
+    margin-left: 5px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: white;
+}
+
+/* 🌙 DARK MODE OVERRIDES */
+
+body.dark {
+    background-color: #0f172a;
+    color: white;
+}
+
+body.dark .sidebar {
+    background-color: #111827;
+}
+
+body.dark .sidebar li.active,
+body.dark .sidebar li:hover {
+    background-color: #1f2937;
+}
+
+body.dark .main {
+    background-color: #0f172a;
+}
+
+body.dark .actions input {
+    background-color: #1e293b;
+    color: white;
+}
+
+body.dark .btn-blue {
+    color: white;
+}
+
+body.dark .btn-icon {
+    background-color: #1e293b;
+    color: white;
+}
+
+body.dark .product-table tbody tr:hover {
+    background-color: #1e293b;
+}
+
+body.dark .badge.active {
+    background-color: #047857;
+    color: #d1fae5;
+}
+
+body.dark .badge.disabled {
+    background-color: #334155;
+    color: #cbd5e1;
+}
+
+/* 🌞 LIGHT MODE OVERRIDES */
+body.light {
+    background-color: #f9fafb;
+    color: #1f2937;
+}
+
+body.light .sidebar {
+    background-color: #e5e7eb;
+}
+
+body.light .sidebar li.active,
+body.light .sidebar li:hover {
+    background-color: #d1d5db;
+}
+
+body.light .main {
+    background-color: #f9fafb;
+}
+
+body.light .actions input {
+    background-color: #e5e7eb;
+    color: #1f2937;
+}
+
+body.light .btn-blue {
+    color: white;
+}
+
+body.light .btn-icon {
+    background-color: #d1d5db;
+    color: #1f2937;
+}
+
+body.light .product-table tbody tr:hover {
+    background-color: #e5e7eb;
+}
+
+body.light .badge.active {
+    background-color: #10b981;
+    color: white;
+}
+
+body.light .badge.disabled {
+    background-color: #9ca3af;
+    color: white;
 }

@@ -1,3 +1,9 @@
+body{
+    background: conic-gradient(from 90deg at 1px 1px, #0000 25%, gainsboro 0%) -0.5px -0.5px/1em 1em,
+            linear-gradient(45deg, #0000 calc(50% + -1*0.5px), gainsboro 0 calc(50% + 0.5px), #0000 0) 0 0/2em 2em,
+            linear-gradient(-45deg, #0000 calc(50% + -1*0.5px), gainsboro 0 calc(50% + 0.5px), #0000 0) 0 0/2em 2em;
+}
+
 form {
     height: 520px;
     width: 400px;
@@ -99,4 +105,37 @@ button[type="submit"] {
 
 .social .fb {
     margin-left: 10px;
+}
+
+/* TEMA DARK*/
+.dark {
+    background: conic-gradient(from 90deg at 1px 1px, #0000 25%, #727272 0%) -0.5px -0.5px / 1em 1em,
+        linear-gradient(45deg, #0000 calc(50% + -1 * 0.5px), #727272 0 calc(50% + 0.5px), #0000 0) 0 0 / 2em 2em,
+        linear-gradient(-45deg, #0000 calc(50% + -1 * 0.5px), #727272 0 calc(50% + 0.5px), #0000 0) 0 0 / 2em 2em;
+    background-color: #333 !important;
+    color: #f0f0f0;
+}
+
+.dark form {
+    border: 2px solid #3061ab57;
+}
+
+.dark form h3 {
+    color: #f0f0f0;
+}
+
+.dark.social button {
+    background-color: #333;
+    color: #fff;
+}
+
+.dark input,
+.dark button {
+    background-color: #333;
+    color: #fff;
+    border: 1px solid #555;
+}
+
+.dark label {
+    color: #ddd;
 }

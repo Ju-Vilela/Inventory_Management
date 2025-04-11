@@ -13,7 +13,8 @@
     <link rel="stylesheet" href="{% static 'css/home.css' %}?v={{ timestamp }}">
 </head>
 
-<body class="light">
+<body>
+
     <div class="dashboard">
         <aside class="sidebar">
             <button id="themeToggle" class="btn-icon" title="Toggle theme">
@@ -23,7 +24,7 @@
                 <ul>
                     <li class="active"><i class="icon bi bi-card-checklist"></i> Home</li>
                     <li><i class="icon bi bi-basket"></i> Products</li>
-                    <li><i class="icon bi bi-bell"></i> Notifications</li>
+                    <li><i class="icon bi bi-person-fill"></i> Perfil</li>
                 </ul>
             </nav>
             <div class="user-profile">
@@ -41,30 +42,8 @@
         </main>
     </div>
 
-    <script>
-        const toggleBtn = document.getElementById("themeToggle");
-        const body = document.body;
-        const icon = toggleBtn.querySelector("i");
+    <script src="{% static 'js/theme-toggle.js' %}"></script>
 
-        if (!body.classList.contains("dark")) {
-            body.classList.add("light");
-            icon.classList.remove("fa-moon");
-            icon.classList.add("fa-sun");
-        }
-
-        toggleBtn.addEventListener("click", () => {
-            body.classList.toggle("dark");
-            body.classList.toggle("light");
-
-            if (body.classList.contains("dark")) {
-                icon.classList.remove("fa-sun");
-                icon.classList.add("fa-moon");
-            } else {
-                icon.classList.remove("fa-moon");
-                icon.classList.add("fa-sun");
-            }
-        });
-    </script>
 </body>
 
 </html>
