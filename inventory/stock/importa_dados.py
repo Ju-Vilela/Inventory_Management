@@ -3,7 +3,7 @@ from stock.models import Produto
 from datetime import datetime
 
 # Lê o arquivo Excel
-df = pd.read_excel("dados.xlsx")
+df = pd.read_excel("DadosIniciais.xlsx")
 
 # Itera sobre cada linha
 for _, row in df.iterrows():
