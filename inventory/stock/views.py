@@ -52,7 +52,7 @@ def cadastrar_produto(request):
         form = ProdutoForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('home')  # ou 'produtos' se tiver uma URL assim
+            return redirect('home')
     else:
         form = ProdutoForm()
     return render(request, 'cadastrar_produto.html', {'form': form})

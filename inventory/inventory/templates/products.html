@@ -18,10 +18,11 @@
         <table>
             <thead>
                 <tr>
-                    <th>Item</th>
+                    <th>Items</th>
                     <th>Categoria</th>
                     <th>Marca</th>
                     <th>Validade</th>
+                    <th>Vendas</th>
                     <th>Estoque</th>
                     <th>Preço</th>
                 </tr>
@@ -33,6 +34,7 @@
                             <td>{{ p.item }}</td>
                             <td>{{ p.categoria }}</td>
                             <td>{{ p.marca }}</td>
+                            <td>{{ p.validade }}</td>
                             <td>{{ p.validade|date:"d/m/Y" }}</td>
                             <td>{{ p.estoque }}</td>
                             <td>R$ {{ p.preco|floatformat:2 }}</td>
