@@ -9,7 +9,9 @@
         <input type="text" placeholder="Search..." />
         <button class="btn-icon"><i class="icon bi bi-search"></i></button>
         <button class="btn-icon"><i class="icon bi bi-check2-square"></i></button>
-        <button class="btn-blue"><i class="icon bi bi-cart-plus"></i>&nbsp;&nbsp; Add Produto</button>
+        <a href="{% url 'cadastrar_produto' %}" class="btn-blue">
+            <i class="icon bi bi-cart-plus"></i>&nbsp;&nbsp; Add Produto
+        </a>
     </div>
 </header>
 
