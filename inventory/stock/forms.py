@@ -18,3 +18,19 @@ class ProdutoForm(forms.ModelForm):
         model = Produto
         fields = ['item', 'categoria', 'marca', 'vendas', 'estoque', 'preco']
 
+# PERFIL FORM
+from .models import Profile
+from django.contrib.auth.models import User
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['cargo', 'pode_cadastrar', 'pode_editar', 'pode_excluir']
+        widgets = {
+            'cargo': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'email']

@@ -1,3 +1,6 @@
+from stock.models import Produto
+Produto.objects.all().delete()
+
 import openpyxl
 import math
 from stock.models import Produto

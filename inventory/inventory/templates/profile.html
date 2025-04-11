@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Perfil{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/perfil.css' %}?v={{ timestamp }}">
+{% endblock %}
+
+{% block content %}
+<h1>Perfil de {{ usuario.username }}</h1>
+
+<form method="post">
+    {% csrf_token %}
+    <fieldset>
+        <legend>Informações Pessoais</legend>
+        {{ user_form.as_p }}
+    </fieldset>
+
+    <fieldset>
+        <legend>Permissões</legend>
+        {{ profile_form.as_p }}
+    </fieldset>
+
+    <button type="submit" class="btn-blue">Salvar Alterações</button>
+</form>
+
+<div class="history">
+    <h2>Histórico de Ações</h2>
+    <ul>
+        <li>Último login: {{ usuario.last_login }}</li>
+        <!-- Você pode adicionar mais logs aqui depois -->
+    </ul>
+</div>
+{% endblock %}

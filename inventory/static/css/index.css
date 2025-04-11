@@ -64,6 +64,10 @@ i {
     background-color: var(--main-color);
     color: white;
     cursor: pointer;
+    border: none;
+    padding: 8px 50px;
+    margin-left: 10px;
+    border-radius: 8px;
 }
 
 .btn-icon {
@@ -75,6 +79,15 @@ i {
     cursor: pointer;
     color: white;
 }
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+
+
+
 
 /* 🌙 DARK MODE OVERRIDES */
 
