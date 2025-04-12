@@ -57,9 +57,21 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 class CustomUser(AbstractUser):
-    cargo = models.CharField(max_length=100, null=True, blank=True)
-    is_manager = models.BooleanField(default=False)
-    is_admin = models.BooleanField(default=False)
+    ADMIN = 'admin'
+    FUNCIONARIO = 'funcionario'
+    GERENTE = 'gerente'
+
+    CARGOS = [
+        (ADMIN, 'Admin'),
+        (FUNCIONARIO, 'Funcionário'),
+        (GERENTE, 'Gerente'),
+    ]
+
+    cargo = models.CharField(
+        max_length=10,
+        choices=CARGOS,
+        default=FUNCIONARIO,
+    )
 
     def __str__(self):
         return self.username
