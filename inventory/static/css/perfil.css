@@ -1,25 +1,187 @@
-.perfil-form {
-    max-width: 600px;
-    margin: 2rem auto;
-    background: var(--bg-card);
+/* Ajustes de layout para telas menores */
+@media screen and (max-width: 768px) {
+
+    .info-card,
+    .historico-card {
+        width: 100%;
+        max-width: 100%;
+        /* Permite que os cards ocupem toda a largura */
+    }
+
+    .perfil-form .dados-pessoais-senhas {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .perfil-form fieldset {
+        width: 100%;
+    }
+}
+
+/* Estilo base e container centralizado */
+.perfil-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+    padding: 2rem;
+}
+
+.perfil-container i {
+    font-size: 1.3rem;
+}
+
+.row.equal-height {
+    align-items: stretch;
+}
+
+.row.equal-height>[class*="col-"] {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Card genérico */
+.card {
+    background: var(--bg-card, #fff);
+    color: var(--text-color, #333);
     padding: 2rem;
     border-radius: 1rem;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow, 0 0 15px rgba(0, 0, 0, 0.1));
+    width: 100%;
+    flex: 1;
+    min-height: 100%;
 }
 
-.perfil-form fieldset {
-    border: none;
-    margin-bottom: 1.5rem;
-}
-
-.perfil-form legend {
+/* Título e logo do card */
+.info-card .logo {
+    font-size: 1.5rem;
     font-weight: bold;
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+/* Subtítulo e informações do card */
+.info-card h3.name {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.info-card p {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.property {
+    font-weight: bold;
     color: var(--primary);
 }
 
-.perfil-form button {
+.info-card p i {
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+    color: var(--secondary);
+}
+
+.historico-card h2 {
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.historico-card ul {
+    list-style: none;
+    padding: 0;
+}
+
+.historico-card li {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.historico-card .acao-data {
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.historico-card .acao-tipo,
+.historico-card .acao-descricao {
+    color: var(--text-secondary);
+}
+
+/* Estilo para os campos do formulário */
+.perfil-form input,
+.perfil-form select,
+.perfil-form textarea {
+    width: 100%;
+    padding: 0.8rem;
+    margin: 0.6rem 0;
+    border-radius: 0.5rem;
+    border: 1px solid var(--main-color);
+    background-color: var(--bg-input);
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+/* Estilo para o fieldset e legend */
+.perfil-form fieldset {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /*min-height: 100%;*/
+}
+
+.perfil-form legend {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: var(--primary);
+}
+
+.perfil-form label {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.perfil-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.perfil-form input {
+    margin: 0;
+}
+
+
+/* Estilo para as permissões (somente visual) */
+.permissao {
+    background: var(--bg-fieldset);
+    padding: 1rem;
+    border-radius: 1rem;
+    color: var(--text-secondary);
+    font-weight: bold;
+}
+
+/* Estilo das permissões visuais */
+.permissao span {
     display: block;
-    margin-top: 1rem;
+    margin: 0.6rem 0;
+}
+
+legend {
+    font-weight: bold;
+}
+
+.dados-pessoais-senhas,
+.alteracao-senha {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }

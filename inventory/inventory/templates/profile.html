@@ -4,58 +4,119 @@
 {% block title %}Perfil{% endblock %}
 
 {% if request.resolver_match.url_name == 'perfil' %}
+{% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/perfil.css' %}?v={{ timestamp }}">
+{% endblock %}
 {% endif %}
 
 {% block content %}
-<header class="main-header">
-    <h1>Configurações da Conta</h1>
-</header>
+<div class="perfil-container container-fluid">
+    <div class="logo">
+        <h1><i class="bi bi-gear" style="font-size: 2rem;"></i> Configurações da Conta</h1>
+    </div>
 
-<section class="info-usuario">
-    <h2>Informações da Conta</h2>
-    <p><strong>Usuário:</strong> {{ usuario.username }}</p>
-    <p><strong>Email:</strong> {{ usuario.email }}</p>
-    <p><strong>Cargo:</strong> {{ usuario.profile.get_cargo_display }}</p>
-    <p><strong>Último login:</strong> {{ ultimo_login|date:"d/m/Y H:i" }}</p>
-    <p><strong>Conta criada em:</strong> {{ data_criacao|date:"d/m/Y H:i" }}</p>
-</section>
+    <div class="row w-100 equal-height">
+        <div class="col-md-6">
+            <!-- Card de Informações da Conta -->
+            <div class="card info-card">
+                <h3 class="name">Informações da Conta</h3>
+                <p><i class="bi bi-envelope"></i><span class="property">Email:</span> {{ usuario.email }}</p>
+                <p><i class="bi bi-briefcase"></i><span class="property">Cargo:</span> {{ usuario.profile.get_cargo_display }}
+                </p>
+                <p><i class="bi bi-clock"></i><span class="property">Último Login:</span> {{ ultimo_login|date:"d.m.Y H:i" }}
+                </p>
+                <p><i class="bi bi-calendar"></i><span class="property">Conta criada em:</span> {{ data_criacao|date:"d.m.Y H:i"}}</p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card permissoes">
+                {% if usuario.profile.cargo in 'admin dono' %}
+                <!-- Permissões (somente visual) -->
+                <div class="permissoes">
+                    <fieldset>
+                        <legend><i class="bi bi-lock"></i> Permissões</legend>
+                        <div class="permissao">
+                            <!-- Exibindo as permissões como texto -->
+                            <span><strong>Permissão 1:</strong> Acesso Total</span>
+                            <span><strong>Permissão 2:</strong> Gestão de Usuários</span>
+                            <span><strong>Permissão 3:</strong> Alteração de Configurações</span>
+                        </div>
+                    </fieldset>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 
-<form method="post" class="perfil-form">
-    {% csrf_token %}
+    <!-- Card de Dados Pessoais, Permissões e Senha -->
+    <div class="card form-card">
+        <form method="post" class="perfil-form">
+            {% csrf_token %}
+            <div class="row w-100 equal-height">
+                <div class="col-md-7">
+                    <!-- Container para Dados e Senha -->
+                    <div class="dados-pessoais">
+                        <!-- Dados Pessoais -->
+                        <div class="dados-pessoais-senhas">
+                            <fieldset>
+                                <legend><i class="bi bi-info-circle"></i> Dados Pessoais</legend>
+                                {{ user_form.as_p }}
+                            </fieldset>
+                        </div>
 
-    <fieldset>
-        <legend>Dados Pessoais</legend>
-        {{ user_form.as_p }}
-    </fieldset>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <!-- Formulário de Alteração de Senha -->
+                    <div class="alteracao-senha">
+                        <fieldset>
+                            <legend><i class="bi bi-key"></i> Alterar Senha</legend>
+                            <div class="form-group">
+                                <label for="senha_atual">Senha Atual:</label>
+                                <input type="password" id="senha_atual" name="senha_atual" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="nova_senha">Nova Senha:</label>
+                                <input type="password" id="nova_senha" name="nova_senha" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmar_senha">Confirmar Nova Senha:</label>
+                                <input type="password" id="confirmar_senha" name="confirmar_senha" class="form-control"
+                                    required>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+            </div>
 
-    {% if usuario.profile.cargo in 'admin dono' %}
-    <fieldset>
-        <legend>Permissões</legend>
-        {{ profile_form.as_p }}
-    </fieldset>
-    {% endif %}
+            <!-- Botão de Salvar -->
+            <button type="submit" class="btn-blue">
+                Salvar
+            </button>
+        </form>
+    </div>
+    
+    <div class="row w-100 equal-height">
+        <div class="col-md-12">
+            <!-- Card do Histórico de Ações -->
+            <div class="card historico-card">
+                <h2><i class="bi bi-clock-history"></i> Histórico de Ações</h2>
+                {% if historico %}
+                <ul class="historico-lista">
+                    {% for acao in historico %}
+                    <li>
+                        <span class="acao-data">{{ acao.data|date:"d.m.Y H:i" }}</span> —
+                        <span class="acao-tipo">{{ acao.acao }}</span>
+                        <span class="acao-descricao">{{ acao.descricao }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>Sem ações registradas ainda...</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 
-    <button type="submit" class="btn-blue">
-        <i class="bi bi-floppy"></i> Salvar
-    </button>
-</form>
-
-<section class="historico">
-    <h2>📜 Histórico de Ações</h2>
-    {% if historico %}
-    <ul class="historico-lista">
-        {% for acao in historico %}
-        <li>
-            <span class="acao-data">{{ acao.data|date:"d/m/Y H:i" }}</span> —
-            <span class="acao-tipo">{{ acao.acao }}</span>
-            <span class="acao-descricao">{{ acao.descricao }}</span>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>Sem ações registradas ainda...</p>
-    {% endif %}
-</section>
-
+</div>
 {% endblock %}
