@@ -1,24 +1,77 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}Usuários{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/users.css' %}?v={{ timestamp }}">
+{% endblock %}
+
 {% block content %}
-<h1>Lista de Usuários</h1>
-<table>
-    <thead>
-        <tr>
-            <th>Nome</th>
-            <th>Email</th>
-            <th>Permissão</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for usuario in usuarios %}
-        <tr>
-            <td>{{ usuario.username }}</td>
-            <td>{{ usuario.email }}</td>
-            <td>{{ usuario.profile.ADMIN|yesno:"Admin,Usuário" }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="container-fluid usuarios-container">
+    <div class="top-bar d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-people-fill icon"></i> Gerenciamento de Usuários</h1>
+        <a class="btn btn-blue" data-bs-toggle="modal" data-bs-target="#criarUsuarioModal"> 
+            <i class="bi bi-plus-circle"></i> Novo Usuário
+        </a>
+    </div>
+
+    <!-- Campo de Busca -->
+    <div class="input-group mb-4 w-100">
+        <input type="text" id="buscaUsuarios" class="form-control" placeholder="Buscar por nome ou email...">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+    </div>
+
+    <!-- Tabela de Usuários -->
+    <div class="card p-3 table-responsive">
+        <table class="table table-hover table-bordered table-usuarios align-middle">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Cargo</th>
+                    <th>Status</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaUsuarios">
+                {% for usuario in usuarios %}
+                <tr>
+                    <td>{{ usuario.get_full_name }}</td>
+                    <td>{{ usuario.email }}</td>
+                    <td>{{ usuario.profile.get_cargo_display }}</td>
+                    <td>
+                        {% if usuario.is_active %}
+                        <span class="badge bg-success">Ativo</span>
+                        {% else %}
+                        <span class="badge bg-danger">Desativado</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <a class="btn btn-sm btn-primary me-1"><!--href="{% url 'editar_usuario' usuario.id %}" -->
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                        <form method="post" class="d-inline"> <!-- action="{% url 'desativar_usuario' usuario.id %}"-->
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger"
+                                onclick="return confirm('Deseja realmente desativar este usuário?');">
+                                <i class="bi bi-person-x-fill"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">Nenhum usuário encontrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include 'modal_addUser.html' %}
+
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'js/users.js' %}"></script>
 {% endblock %}

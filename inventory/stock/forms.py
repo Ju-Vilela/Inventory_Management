@@ -19,7 +19,6 @@ class ProdutoForm(forms.ModelForm):
         fields = ['item', 'categoria', 'marca', 'vendas', 'estoque', 'preco']
 
 # PERFIL FORM
-from django import forms
 from django.contrib.auth.models import User
 from .models import Profile
 
@@ -43,3 +42,14 @@ class ProfileForm(forms.ModelForm):
             'pode_editar': 'Pode editar produtos?',
             'pode_excluir': 'Pode excluir produtos?',
         }
+
+# forms.py
+from django.contrib.auth.forms import UserCreationForm
+from .models import CustomUser  # ou User se for o padrão
+
+class UsuarioCreateForm(UserCreationForm):
+    cargo = forms.ChoiceField(choices=CustomUser.CARGOS, required=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email', 'cargo', 'password1', 'password2']

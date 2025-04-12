@@ -12,7 +12,7 @@
 {% block content %}
 <div class="perfil-container container-fluid">
     <div class="logo">
-        <h1><i class="bi bi-gear" style="font-size: 2rem;"></i> Configurações da Conta</h1>
+        <h1><i class="bi bi-gear icon"></i> Configurações da Conta</h1>
     </div>
 
     <div class="row w-100 equal-height">
@@ -23,9 +23,9 @@
                 <p><i class="bi bi-envelope"></i><span class="property">Email:</span> {{ usuario.email }}</p>
                 <p><i class="bi bi-briefcase"></i><span class="property">Cargo:</span> {{ usuario.profile.get_cargo_display }}
                 </p>
-                <p><i class="bi bi-clock"></i><span class="property">Último Login:</span> {{ ultimo_login|date:"d.m.Y H:i" }}
+                <p><i class="bi bi-clock"></i><span class="property">Último Login:</span> {{ ultimo_login|date:"d.m.Y h:i:s" }}
                 </p>
-                <p><i class="bi bi-calendar"></i><span class="property">Conta criada em:</span> {{ data_criacao|date:"d.m.Y H:i"}}</p>
+                <p><i class="bi bi-calendar"></i><span class="property">Conta criada em:</span> {{ data_criacao|date:"d.m.Y H:i.s"}}</p>
             </div>
         </div>
         <div class="col-md-6">

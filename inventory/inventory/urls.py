@@ -12,7 +12,9 @@ urlpatterns = [
     path('products/', views.lista_produtos, name='productsList'),
     path('perfil/', views.perfil, name='profile'),
     path('usuarios/', views.lista_usuarios, name='users'),
+    path('usuarios/adicionar/', views.addUser, name='addUser'),
     path('cadastrar/', views.cadastrar_produto, name='products'),
+    
 ]
 
 from django.conf import settings

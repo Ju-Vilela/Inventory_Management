@@ -108,3 +108,21 @@ def lista_usuarios(request):
 
     usuarios = User.objects.all()
     return render(request, 'users.html', {'users': usuarios})
+
+# CRIAR USUARIO
+from django.contrib import messages
+from .forms import UsuarioCreateForm
+
+def addUser(request):
+    if request.method == 'POST':
+        form = UsuarioCreateForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Usuário criado com sucesso!')
+            return redirect('usuarios')
+        else:
+            messages.error(request, 'Erro ao criar usuário. Verifique os campos.')
+    else:
+        form = UsuarioCreateForm()
+
+    return render(request, 'modal_addUser.html', {'form': form})

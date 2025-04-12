@@ -56,6 +56,10 @@ body {
     overflow-y: auto;
 }
 
+h1 i.icon {
+    font-size: 2rem;
+}
+
 i {
     font-size: 15px;
 }
@@ -178,6 +182,38 @@ body.dark .historico-card {
     color: #f0f0f0;
 }
 
+body.dark .modal-content {
+    background-color: #252537;
+    color: #f1f1f1;
+}
+
+body.dark .form-control,
+body.dark .form-select {
+    background-color: #2e2e40;
+    color: #f1f1f1;
+    border: 1px solid #444;
+}
+
+body.dark .modal-header {
+    border-bottom: 1px solid #444;
+}
+
+body.dark .modal-footer {
+    border-top: 1px solid #444;
+}
+
+body.dark .criar-usuario-page .card {
+    background-color: #252537;
+    color: #f1f1f1;
+}
+
+body.dark .criar-usuario-page input,
+body.dark .criar-usuario-page select {
+    background-color: #2e2e40;
+    color: #f1f1f1;
+    border: 1px solid #444;
+}
+
 
 
 /* 🌞 LIGHT MODE OVERRIDES */
@@ -206,6 +242,10 @@ body.light .actions input {
 
 body.light .btn-blue {
     color: white;
+}
+
+body.light .btn-blue:hover {
+    background-color: #3c79d5;
 }
 
 body.light .btn-icon {
