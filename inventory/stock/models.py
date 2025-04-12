@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 class Produto(models.Model):
     item = models.CharField(max_length=100)
@@ -16,7 +17,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     cargo = models.CharField(max_length=30, choices=[
         ('dono', 'Dono'),
         ('admin', 'Administrador'),
@@ -44,7 +45,7 @@ def criar_ou_atualizar_profile(sender, instance, created, **kwargs):
 from django.contrib.auth.models import User
 
 class LogDeAcao(models.Model):
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     acao = models.CharField(max_length=50)
     descricao = models.TextField()
     data = models.DateTimeField(auto_now_add=True)
@@ -68,11 +69,19 @@ class CustomUser(AbstractUser):
     ]
 
     cargo = models.CharField(
-        max_length=10,
+        max_length=50,
         choices=CARGOS,
         default=FUNCIONARIO,
     )
 
+    @property
+    def is_manager(self):
+        return self.cargo == 'gerente'
+    
+    @property
+    def is_admin(self):
+        return self.cargo == 'admin'
+    
     def __str__(self):
         return self.username
 
