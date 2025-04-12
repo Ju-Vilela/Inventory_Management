@@ -188,27 +188,17 @@ def lista_usuarios(request):
     return render(request, 'users.html', {'users': usuarios})
 
 # CRIAR USUARIO
-import logging
-
-logger = logging.getLogger(__name__)
-
 def add_user(request):
-    logger.debug("Chegando na view add_user")
-    
+    usuarios = CustomUser.objects.all()
     if request.method == 'POST':
-        logger.debug("Formulário recebido: %s", request.POST)
-        
         form = UsuarioCreateForm(request.POST)
         if form.is_valid():
             form.save()
-            logger.debug("Usuário criado com sucesso")
             return redirect('users')
-        else:
-            logger.debug("Formulário inválido")
     else:
-        logger.debug("Formulário não enviado")
-    
-    return render(request, 'users.html', {'form': form})
+        form = UsuarioCreateForm()
+
+    return render(request, 'users.html', {'form': form, 'users': usuarios})
 
 
 # PERMISSÕES
