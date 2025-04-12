@@ -56,27 +56,55 @@ def cadastrar_produto(request):
     return render(request, 'products.html', {'form': form})
 
 # PERFIL PAGE
-from django.contrib.auth.decorators import login_required
+from .forms import UserForm, ProfileForm
+from django.contrib.auth.models import User
+from django.utils.timezone import localtime
+from .models import LogDeAcao
 
 @login_required
 def perfil(request):
     user = request.user
-    profile, created = Profile.objects.get_or_create(user=user)
+    profile = user.profile
 
     if request.method == 'POST':
         user_form = UserForm(request.POST, instance=user)
         profile_form = ProfileForm(request.POST, instance=profile)
+
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
-            return redirect('perfil')
+            return redirect('profile')
+
     else:
         user_form = UserForm(instance=user)
         profile_form = ProfileForm(instance=profile)
 
-    return render(request, 'perfil.html', {
-        'usuario': user,
+    # Aqui pega as ações do usuário (precisa do modelo de histórico)
+    historico = LogDeAcao.objects.filter(usuario=user).order_by('-data')[:10]
+
+    context = {
         'user_form': user_form,
         'profile_form': profile_form,
-        'timestamp': datetime.now().timestamp()
-    })
+        'usuario': user,
+        'historico': historico,
+        'timestamp': datetime.now().timestamp(),
+        'ultimo_login': localtime(user.last_login),
+        'data_criacao': localtime(user.date_joined)
+    }
+
+    return render(request, 'profile.html', context)
+
+# ADMIN PAGE
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.models import User
+
+def is_admin(user):
+    return user.profile.cargo in ['admin', 'dono']
+
+@login_required
+def lista_usuarios(request):
+    if not request.user.is_superuser:
+        return redirect('home')
+
+    usuarios = User.objects.all()
+    return render(request, 'users.html', {'users': usuarios})

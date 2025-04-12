@@ -1,34 +1,61 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Perfil{% endblock %}
 
-{% block extra_css %}
+{% if request.resolver_match.url_name == 'perfil' %}
 <link rel="stylesheet" href="{% static 'css/perfil.css' %}?v={{ timestamp }}">
-{% endblock %}
+{% endif %}
 
 {% block content %}
-<h1>Perfil de {{ usuario.username }}</h1>
+<header class="main-header">
+    <h1>Configurações da Conta</h1>
+</header>
 
-<form method="post">
+<section class="info-usuario">
+    <h2>Informações da Conta</h2>
+    <p><strong>Usuário:</strong> {{ usuario.username }}</p>
+    <p><strong>Email:</strong> {{ usuario.email }}</p>
+    <p><strong>Cargo:</strong> {{ usuario.profile.get_cargo_display }}</p>
+    <p><strong>Último login:</strong> {{ ultimo_login|date:"d/m/Y H:i" }}</p>
+    <p><strong>Conta criada em:</strong> {{ data_criacao|date:"d/m/Y H:i" }}</p>
+</section>
+
+<form method="post" class="perfil-form">
     {% csrf_token %}
+
     <fieldset>
-        <legend>Informações Pessoais</legend>
+        <legend>Dados Pessoais</legend>
         {{ user_form.as_p }}
     </fieldset>
 
+    {% if usuario.profile.cargo in 'admin dono' %}
     <fieldset>
         <legend>Permissões</legend>
         {{ profile_form.as_p }}
     </fieldset>
+    {% endif %}
 
-    <button type="submit" class="btn-blue">Salvar Alterações</button>
+    <button type="submit" class="btn-blue">
+        <i class="bi bi-floppy"></i> Salvar
+    </button>
 </form>
 
-<div class="history">
-    <h2>Histórico de Ações</h2>
-    <ul>
-        <li>Último login: {{ usuario.last_login }}</li>
-        <!-- Você pode adicionar mais logs aqui depois -->
+<section class="historico">
+    <h2>📜 Histórico de Ações</h2>
+    {% if historico %}
+    <ul class="historico-lista">
+        {% for acao in historico %}
+        <li>
+            <span class="acao-data">{{ acao.data|date:"d/m/Y H:i" }}</span> —
+            <span class="acao-tipo">{{ acao.acao }}</span>
+            <span class="acao-descricao">{{ acao.descricao }}</span>
+        </li>
+        {% endfor %}
     </ul>
-</div>
+    {% else %}
+    <p>Sem ações registradas ainda...</p>
+    {% endif %}
+</section>
+
 {% endblock %}

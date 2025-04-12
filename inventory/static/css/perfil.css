@@ -1,0 +1,25 @@
+.perfil-form {
+    max-width: 600px;
+    margin: 2rem auto;
+    background: var(--bg-card);
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: var(--shadow);
+}
+
+.perfil-form fieldset {
+    border: none;
+    margin-bottom: 1.5rem;
+}
+
+.perfil-form legend {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    color: var(--primary);
+}
+
+.perfil-form button {
+    display: block;
+    margin-top: 1rem;
+}

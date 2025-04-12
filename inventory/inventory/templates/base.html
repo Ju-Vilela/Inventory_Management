@@ -35,9 +35,18 @@
                     </a>
                     <a href="{% url 'profile' %}">
                         <li class="{% if request.resolver_match.url_name == 'perfil' %}active{% endif %}">
-                            <i class="icon bi bi-person-fill"></i> Perfil
+                            <i class="icon bi bi-person-fill"></i>
+                            <span class="fw-bold">{{ request.user.get_full_name|default:request.user.username }}</span>
                         </li>
                     </a>
+                    {% if request.user.is_superuser %}
+                        <a href="{% url 'users' %}">
+                            <li class="{% if request.resolver_match.url_name == 'perfil' %}active{% endif %}">
+                                <i class="icon bi bi-people-fill"></i> Perfis
+                            </li>
+                        </a>
+                    {% endif %}
+
                 </ul>
             </nav>
             <div class="user-profile">

@@ -39,3 +39,15 @@ def criar_ou_atualizar_profile(sender, instance, created, **kwargs):
         Profile.objects.create(user=instance)
     else:
         instance.profile.save()
+
+# HISTORICO
+from django.contrib.auth.models import User
+
+class LogDeAcao(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    acao = models.CharField(max_length=50)
+    descricao = models.TextField()
+    data = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.usuario.username} - {self.acao} - {self.data}"

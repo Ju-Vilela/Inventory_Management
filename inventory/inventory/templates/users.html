@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Usuários{% endblock %}
+
+{% block content %}
+<h1>Lista de Usuários</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Permissão</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for usuario in usuarios %}
+        <tr>
+            <td>{{ usuario.username }}</td>
+            <td>{{ usuario.email }}</td>
+            <td>{{ usuario.profile.ADMIN|yesno:"Admin,Usuário" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
