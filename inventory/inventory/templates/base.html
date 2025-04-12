@@ -30,24 +30,23 @@
                         </li>
                     </a>
                     <a href="{% url 'products' %}">
-                        <li class="{% if request.resolver_match.url_name == 'produtos' %}active{% endif %}">
+                        <li class="{% if request.resolver_match.url_name == 'products' %}active{% endif %}">
                             <i class="icon bi bi-basket"></i> Products
                         </li>
                     </a>
                     <a href="{% url 'profile' %}">
-                        <li class="{% if request.resolver_match.url_name == 'perfil' %}active{% endif %}">
+                        <li class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
                             <i class="icon bi bi-person-fill"></i>
-                            <span class="fw-bold">{{ request.user.get_full_name|default:request.user.username }}</span>
+                            <span class="fw-bold">{{ request.user.cargo }}</span>
                         </li>
                     </a>
                     {% if request.user.is_superuser %}
-                        <a href="{% url 'users' %}">
-                            <li class="{% if request.resolver_match.url_name == 'perfil' %}active{% endif %}">
-                                <i class="icon bi bi-people-fill"></i> Perfis
-                            </li>
-                        </a>
+                    <a href="{% url 'users' %}">
+                        <li class="{% if request.resolver_match.url_name == 'users' %}active{% endif %}">
+                            <i class="icon bi bi-people-fill"></i> Perfis
+                        </li>
+                    </a>
                     {% endif %}
-
                 </ul>
             </nav>
             <div class="user-profile" style="text-align: center;">
@@ -59,9 +58,7 @@
         </aside>
 
         <main class="main">
-            {% block content %}
-            <!-- Os filhos colocam conteúdo aqui -->
-            {% endblock %}
+            {% block content %}<!-- Os filhos colocam conteúdo aqui -->{% endblock %}
         </main>
     </div>
 
