@@ -1,14 +1,16 @@
 from stock.models import Produto
-Produto.objects.all().delete()
-
 import openpyxl
 import math
-from stock.models import Produto
 from datetime import datetime
 
+# Limpar todos os produtos
+Produto.objects.all().delete()
+
+# Carregar a planilha
 wb = openpyxl.load_workbook('stock/DadosIniciais.xlsx')
 sheet = wb.active
 
+# Iterar pelas linhas da planilha
 for row in sheet.iter_rows(min_row=2, values_only=True):
     item, categoria, marca, validade, estoque, preco = row
 
@@ -23,13 +25,14 @@ for row in sheet.iter_rows(min_row=2, values_only=True):
         except:
             validade = None
 
-    # Marca
-    marca = "" if marca is None or (isinstance(marca, float) and math.isnan(marca)) else marca
+    # Marca: se for 'null' ou vazio, define como 'sem marca'
+    if marca == 'null' or not marca:
+        marca = 'sem marca'
 
-    # Estoque
+    # Estoque: se for 'null', define como 0
     estoque = estoque if estoque != 'null' else 0
 
-    # Preço
+    # Preço: converte para float se tiver valor
     preco = float(str(preco).replace("R$", "").replace(",", ".")) if preco else 0.0
 
     # Criação do produto com vendas=0
@@ -43,4 +46,4 @@ for row in sheet.iter_rows(min_row=2, values_only=True):
         vendas=0
     )
 
-print("Importação feita com amor e sem erros! 🌟💾")
+print("Importacao feita com amor e sem erros!")

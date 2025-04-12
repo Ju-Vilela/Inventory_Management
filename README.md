@@ -41,7 +41,8 @@ pip install openpyxl
 
 Se você já tem basta rodar:
 ```bash
-python importa_dados.py
+python manage.py shell
+exec(open('stock/importa_dados.py').read())
 ```
 
 ---
