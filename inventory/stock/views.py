@@ -28,8 +28,9 @@ def login_view(request):
 # PRODUCTS LIST
 from django.contrib.auth.views import LoginView
 from .forms import CustomLoginForm
+
 class CustomLoginView(LoginView):
-    template_name = 'registration/login.html'
+    template_name = 'login.html'
     authentication_form = CustomLoginForm
 
 @login_required
@@ -126,3 +127,36 @@ def addUser(request):
         form = UsuarioCreateForm()
 
     return render(request, 'modal_addUser.html', {'form': form})
+
+# PERMISSÕES
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
+from .models import Product
+
+@login_required
+def edit_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    if not product.can_edit(request.user):
+        return HttpResponseForbidden("Você não tem permissão para editar este produto.")
+
+    if request.method == 'POST':
+        product.name = request.POST.get('name')
+        product.description = request.POST.get('description')
+        product.quantity = request.POST.get('quantity')
+        product.price = request.POST.get('price')
+        product.save()
+        return redirect('product_list')
+    
+    return render(request, 'edit_product.html', {'product': product})
+
+@login_required
+def delete_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    if not product.can_delete(request.user):
+        return HttpResponseForbidden("Você não tem permissão para excluir este produto.")
+
+    product.delete()
+    return redirect('product_list')

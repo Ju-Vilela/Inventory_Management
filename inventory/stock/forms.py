@@ -43,13 +43,13 @@ class ProfileForm(forms.ModelForm):
             'pode_excluir': 'Pode excluir produtos?',
         }
 
-# forms.py
+# CREATE FORM
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser  # ou User se for o padrão
+from .models import User
 
 class UsuarioCreateForm(UserCreationForm):
-    cargo = forms.ChoiceField(choices=CustomUser.CARGOS, required=True)
+    cargo = forms.ChoiceField(choices=User.CARGOS, required=True)
 
     class Meta:
-        model = CustomUser
+        model = User
         fields = ['username', 'email', 'cargo', 'password1', 'password2']

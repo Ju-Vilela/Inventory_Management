@@ -1,13 +1,13 @@
 from django.contrib import admin
-from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
+from .models import CustomUser, Product
 
-# Personalizando a exibição no admin
 class CustomUserAdmin(UserAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'is_active')
-    search_fields = ('username', 'email', 'first_name', 'last_name')
-    ordering = ('username',)
+    model = CustomUser
+    list_display = ['username', 'first_name', 'last_name', 'email', 'cargo', 'is_manager', 'is_admin']
+    list_filter = ['is_manager', 'is_admin']
+    search_fields = ['username', 'email']
+    ordering = ['username']
 
-# Desregistrando o User padrão e registrando com a personalização
-admin.site.unregister(User)
-admin.site.register(User, CustomUserAdmin)
+admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(Product)
