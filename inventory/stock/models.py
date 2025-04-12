@@ -52,10 +52,3 @@ class LogDeAcao(models.Model):
     def __str__(self):
         return f"{self.usuario.username} - {self.acao} - {self.data}"
 
-# MODAL_ADDUSER
-from django.contrib.auth.models import AbstractUser
-from django.db import models
-
-class CustomUser(AbstractUser):
-    # Campos personalizados aqui, se quiser
-    pass
