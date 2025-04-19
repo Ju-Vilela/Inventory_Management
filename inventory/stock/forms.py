@@ -45,8 +45,36 @@ class AlterarSenhaForm(forms.Form):
 
 # CREATE USUARIO FORM
 class UsuarioCreateForm(UserCreationForm):
-    cargo = forms.ChoiceField(choices=CustomUser.CARGOS, required=True)
+    cargo = forms.ChoiceField(
+        choices=CustomUser.CARGOS,
+        required=True,
+        widget=forms.Select(attrs={'class': 'input-field'})
+    )
+
+    username = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'Usuário'})
+    )
+    first_name = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'Nome'})
+    )
+    last_name = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'Sobrenome'})
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={'class': 'input-field', 'placeholder': 'Email'})
+    )
+    password1 = forms.CharField(
+        label='Senha',
+        widget=forms.PasswordInput(attrs={'class': 'input-field', 'placeholder': 'Senha'})
+    )
+    password2 = forms.CharField(
+        label='Confirmar Senha',
+        widget=forms.PasswordInput(attrs={'class': 'input-field', 'placeholder': 'Confirmar Senha'})
+    )
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'cargo', 'password1', 'password2']
+        fields = ['username', 'first_name', 'last_name', 'email', 'cargo', 'password1', 'password2']
+

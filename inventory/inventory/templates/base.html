@@ -16,6 +16,16 @@
 </head>
 
 <body class="{% if request.COOKIES.theme == 'dark' %}dark{% else %}light{% endif %}">
+    {% if messages %}
+    <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x p-3 z-index-9999">
+        {% for message in messages %}
+        <div class="alert {{ message.tags }} alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <div class="dashboard">
         <aside class="sidebar">
@@ -64,6 +74,14 @@
 
     <script src="{% static 'js/theme-toggle.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        setTimeout(function () {
+            const alertContainer = document.getElementById('alert-container');
+            if (alertContainer) {
+                alertContainer.style.display = 'none';
+            }
+        }, 5000); // O alerta vai sumir após 5 segundos
+    </script>
 
     {% block extra_ja %}{% endblock %}
 

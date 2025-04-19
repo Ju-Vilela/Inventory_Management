@@ -181,11 +181,28 @@ def is_admin(user):
 
 @login_required
 def lista_usuarios(request):
-    if not is_admin(request.user):
-        return redirect('home')
-    
+    form = UsuarioCreateForm()
     usuarios = CustomUser.objects.all()
-    return render(request, 'users.html', {'users': usuarios})
+    context = {
+        'usuarios': usuarios,
+        'form': form,
+        'timestamp': datetime.now().timestamp()
+    }
+    return render(request, 'users.html', context)
+
+
+# USERS PAGE
+@login_required
+def users(request):
+    form = UsuarioCreateForm()
+    usuarios = CustomUser.objects.all()
+    context = {
+        'usuarios': usuarios,
+        'form': form,
+        'timestamp': datetime.now().timestamp()
+    }
+    return render(request, 'users.html', context)
+
 
 # CRIAR USUARIO
 def add_user(request):
@@ -194,11 +211,12 @@ def add_user(request):
         form = UsuarioCreateForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Usuário criado com sucesso!')
             return redirect('users')
     else:
         form = UsuarioCreateForm()
 
-    return render(request, 'users.html', {'form': form, 'users': usuarios})
+    return render(request, 'users.html', {'form': form, 'usuarios': usuarios})
 
 
 # PERMISSÕES
