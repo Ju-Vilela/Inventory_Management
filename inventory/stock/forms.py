@@ -84,7 +84,10 @@ class ProdutoForm(forms.ModelForm):
 
     class Meta:
         model = Produto
-        fields = ['nome', 'marca', 'categoria', 'nova_categoria', 'validade', 'vendas', 'estoque', 'preco', 'ativo']
+        fields = '__all__'
+        widgets = {
+            'ativo': forms.HiddenInput(),
+        }
 
     def clean(self):
         cleaned_data = super().clean()

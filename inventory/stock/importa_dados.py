@@ -46,4 +46,4 @@ for row in sheet.iter_rows(min_row=2, values_only=True):
         vendas=0
     )
 
-print("Importacao feita com amor e sem erros!")
+print("Importacao feita com sucesso!")

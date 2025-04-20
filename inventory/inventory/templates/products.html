@@ -51,16 +51,18 @@
             {{ form.preco.label_tag }}
             {{ form.preco }}
         </div>
-    </div>
-
-    {% if editando %}
-    <div class="row mb-3">
+        {% if editando %}
         <div class="col-md-6 col-12 mb-2">
-            {{ form.ativo.label_tag }}
-            {{ form.ativo }} <!-- Checkbox para ativo/desativado -->
+            <label>Status:</label><br>
+            <button type="button" id="statusBtn"
+                class="btn {% if form.instance.ativo %}btn-success{% else %}btn-danger{% endif %}">
+                {% if form.instance.ativo %}Ativo{% else %}Inativo{% endif %}
+            </button>
+            <input type="hidden" name="ativo" id="ativoInput" value="{{ form.instance.ativo|yesno:" True,False" }}">
         </div>
+        {% endif %}
+
     </div>
-    {% endif %}
 
     <button type="submit" class="btn btn-blue">
         {% if editando %}Salvar Alterações{% else %}Cadastrar Produto{% endif %}
@@ -98,6 +100,23 @@
         categoriaSelect.addEventListener('change', toggleNovaCategoria);
         toggleNovaCategoria();  // Função já rodando para verificar o estado inicial
     });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const statusBtn = document.getElementById('statusBtn');
+        const ativoInput = document.getElementById('ativoInput');
+
+        if (statusBtn) {
+            statusBtn.addEventListener('click', function () {
+                const isAtivo = ativoInput.value === 'True';
+
+                ativoInput.value = isAtivo ? 'False' : 'True';
+                statusBtn.textContent = isAtivo ? 'Inativo' : 'Ativo';
+                statusBtn.classList.toggle('btn-success', !isAtivo);
+                statusBtn.classList.toggle('btn-danger', isAtivo);
+            });
+        }
+    });
+
 </script>
 {% endblock %}
 {% endblock %}

@@ -159,6 +159,7 @@ body.dark .sidebar {
 body.dark .sidebar li.active,
 body.dark .sidebar li:hover {
     background-color: #1f2937;
+    color: white;
 }
 
 body.dark .main {
@@ -181,16 +182,6 @@ body.dark .btn-icon {
 
 body.dark .product-table tbody tr:hover {
     background-color: #1e293b;
-}
-
-body.dark .badge.active {
-    background-color: #047857;
-    color: #d1fae5;
-}
-
-body.dark .badge.disabled {
-    background-color: #334155;
-    color: #cbd5e1;
 }
 
 body.dark .form-card {
@@ -290,6 +281,7 @@ body.light .sidebar {
 body.light .sidebar li.active,
 body.light .sidebar li:hover {
     background-color: #d1d5db;
+    color: black;
 }
 
 body.light .main {
@@ -316,14 +308,4 @@ body.light .btn-icon {
 
 body.light .product-table tbody tr:hover {
     background-color: #e5e7eb;
-}
-
-body.light .badge.active {
-    background-color: #10b981;
-    color: white;
-}
-
-body.light .badge.disabled {
-    background-color: #9ca3af;
-    color: white;
 }

@@ -48,20 +48,23 @@ def lista_produtos(request):
 def editar_produto(request, produto_id):
     produto = get_object_or_404(Produto, id=produto_id)
 
+    if not produto.ativo and not request.user.groups.filter(name='Gerente').exists():
+        messages.warning(request, "Você não tem permissão para editar um produto inativo.")
+        return redirect('home')
+
     if request.method == 'POST':
         form = ProdutoForm(request.POST, instance=produto)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Produto atualizado com sucesso!')
+            messages.success(request, "Produto atualizado com sucesso!")
             return redirect('home')
     else:
         form = ProdutoForm(instance=produto)
 
     context = {
         'form': form,
-        'timestamp': datetime.now().timestamp(),
         'editando': True,
-        'produto_id': produto.id
+        'produto': produto
     }
     return render(request, 'products.html', context)
 

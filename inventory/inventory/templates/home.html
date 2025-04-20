@@ -11,14 +11,22 @@
     <main class="main">
         <header class="main-header">
             <h1>Produtos</h1>
-            <div class="actions">
-                <input type="text" placeholder="Search..." />
-                <button class="btn-blue"><i class="icon bi bi-cart-plus"></i>&nbsp;&nbsp; Add Produto</button>
-                <button class="btn-icon"><i class="icon bi bi-search"></i></button>
-                <button class="btn-icon"><i class="icon bi bi-check2-square"></i></button>
+            <div class="actions d-flex gap-2 flex-wrap">
+                <div class="input-group w-auto">
+                    <input type="text" class="form-control" id="buscaProdutos" placeholder="Buscar produtos..." />
+                    <button class="btn btn-outline-secondary" type="button">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+                <button class="btn btn-blue">
+                    <i class="bi bi-cart-plus"></i>&nbsp;&nbsp; Add Produto
+                </button>
+                <button class="btn btn-outline-success">
+                    <i class="bi bi-check2-square"></i>
+                </button>
             </div>
         </header>
-        
+
         <table class="product-table">
             <thead>
                 <tr>
@@ -31,11 +39,18 @@
                     <th>Preço</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="produtoTabela">
                 {% if produtos %}
                 {% for p in produtos %}
-                <tr class="clickable-row" data-href="{% url 'editProduct' p.id %}">
-                    <td>{{ p.item }}</td>
+                <tr class="clickable-row {% if not p.ativo %}disabled-row{% endif %}"
+                    data-href="{% url 'editProduct' p.id %}">
+                    <td>
+                        {% if not p.ativo %}
+                        <i class="bi bi-slash-circle-fill text-danger" title="Produto inativo"></i>
+                        {% endif %}
+                        &nbsp;&nbsp;
+                        {{ p.item }}
+                    </td>
                     <td>{{ p.categoria }}</td>
                     <td>{{ p.marca }}</td>
                     <td>{{ p.validade|date:"d/m/Y" }}</td>
@@ -58,6 +73,28 @@
 {% block extra_js %}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        // Filtrar produtos ao digitar no campo de busca
+        const buscaProduto = document.getElementById('buscaProdutos');
+        const tabelaProduto = document.getElementById('produtoTabela');
+
+        buscaProduto.addEventListener('input', function () {
+            const searchTerm = buscaProduto.value.toLowerCase();
+            const rows = tabelaProduto.getElementsByTagName('tr');
+
+            Array.from(rows).forEach(function (row) {
+                const item = row.cells[0].textContent.toLowerCase();
+                const categoria = row.cells[1].textContent.toLowerCase();
+                const marca = row.cells[2].textContent.toLowerCase();
+
+                if (item.includes(searchTerm) || categoria.includes(searchTerm) || marca.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        // Tornar as linhas clicáveis
         document.querySelectorAll(".clickable-row").forEach(row => {
             row.addEventListener("click", () => {
                 window.location.href = row.dataset.href;
@@ -65,6 +102,5 @@
         });
     });
 </script>
-
 {% endblock %}
 {% endblock %}

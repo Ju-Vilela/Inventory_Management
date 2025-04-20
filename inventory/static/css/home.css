@@ -32,30 +32,26 @@
     background-color: #1e293b;
 }
 
-.badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.badge.active {
-    background-color: #047857;
-    color: #d1fae5;
-}
-
-.badge.disabled {
-    background-color: #334155;
-    color: #cbd5e1;
-}
-
-
 .clickable-row {
     cursor: pointer;
     transition: background-color 0.2s ease-in-out, border-left 0.2s ease-in-out;
 }
 
 .clickable-row:hover {
+    background-color: #1e293b;
+    border-left: 4px solid var(--main-color);
+}
+
+.disabled-row {
+    background-color: #f8d7da;
+    color: #721c24;
+    opacity: 0.6;
+    /* Não permite clique */
+    pointer-events: none;
+    cursor: default;
+}
+
+.product-table tbody tr:not(.disabled-row):hover {
     background-color: #1e293b;
     border-left: 4px solid var(--main-color);
 }
