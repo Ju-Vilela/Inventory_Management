@@ -72,17 +72,32 @@
                         {% endif %}
                     </td>
                     <td class="text-center">
-                        <a class="btn btn-sm btn-primary me-1"><!--href="url 'editar_usuario' usuario.id" -->
+                        {% if usuario.is_active %}
+                        <!-- Ações para usuário ativo -->
+                        <a class="btn btn-sm btn-outline-info me-1" href="{% url 'editUser' usuario.id %}">
                             <i class="bi bi-pencil-square"></i>
                         </a>
-                        <form method="post" class="d-inline"> <!-- action="url 'desativar_usuario' usuario.id"-->
+                        <form method="post" action="{% url 'disableUser' usuario.id %}" class="d-inline">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-danger"
-                                onclick="return confirm('Deseja realmente desativar este usuário?');">
+                            <!-- BOTÃO DE DESATIVAR -->
+                            <button type="button" class="btn btn-sm btn-danger"
+                                onclick='showConfirmModal("Deseja realmente desativar este usuário?", "{% url "disableUser" usuario.id %}")'>
                                 <i class="bi bi-person-x-fill"></i>
                             </button>
                         </form>
+                        {% else %}
+                        <!-- Botão para reativar usuário -->
+                        <form method="post" action="{% url 'enableUser' usuario.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="button" class="btn btn-outline-success"
+                                onclick='showConfirmModal("Tem certeza que deseja ativar este usuário?", "{% url "enableUser" usuario.id %}")'>
+                                <i class="bi bi-person-check-fill"></i>
+                            </button>
+                        </form>
+                        {% endif %}
                     </td>
+
+
                 </tr>
                 {% empty %}
                 <tr>

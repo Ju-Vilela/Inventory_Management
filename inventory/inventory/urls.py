@@ -13,6 +13,9 @@ urlpatterns = [
     path('perfil/', views.perfil, name='profile'),
     path('usuarios/', views.lista_usuarios, name='users'),
     path('usuarios/adicionar-usuario/',  views.add_user, name='addUser'),
+    path('usuarios/edit/<int:id>/', views.edit_user, name='editUser'),
+    path('usuarios/disable/<int:id>/', views.disable_user, name='disableUser'),
+    path('usuarios/ativar/<int:id>/', views.enable_user, name='enableUser'),
     path('cadastrar/', views.cadastrar_produto, name='products'),
     path('', views.home, name='home'),
 ]

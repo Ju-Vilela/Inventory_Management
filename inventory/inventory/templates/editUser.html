@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Usuário{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center">
+        <h1>Editar Usuário: {{ usuario.username }}</h1>
+
+        <!-- Botão para desativar o usuário -->
+        <button class="btn btn-danger"
+            onclick='showConfirmModal("Tem certeza que quer desativar este usuário?", "{% url "disableUser" usuario.id %}")'>
+            <i class="bi bi-person-x-fill"></i> Desativar Usuário
+        </button>
+
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-container">
+            <!-- Campo para Nome -->
+            <div class="form-group">
+                <label for="first_name">Nome</label>
+                {{ form.first_name }}
+            </div>
+
+            <!-- Campo para Sobrenome -->
+            <div class="form-group">
+                <label for="last_name">Sobrenome</label>
+                {{ form.last_name }}
+            </div>
+
+            <!-- Campo para Email -->
+            <div class="form-group">
+                <label for="email">Email</label>
+                {{ form.email }}
+            </div>
+
+            <!-- Campo para Cargo -->
+            <div class="form-group">
+                <label for="cargo">Cargo</label>
+                {{ form.cargo }}
+            </div>
+
+            <!-- Campo para Senha -->
+            <div class="form-group">
+                <label for="password1">Senha</label>
+                {{ form.password1 }}
+            </div>
+
+            <!-- Campo para Confirmar Senha -->
+            <div class="form-group">
+                <label for="password2">Confirmar Senha</label>
+                {{ form.password2 }}
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="submit-btn btn btn-success">Salvar Alterações</button>
+
+                <!-- Botão Cancelar -->
+                <a href="{% url 'users' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

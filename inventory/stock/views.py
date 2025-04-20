@@ -191,34 +191,6 @@ def lista_usuarios(request):
     return render(request, 'users.html', context)
 
 
-# USERS PAGE
-@login_required
-def users(request):
-    form = UsuarioCreateForm()
-    usuarios = CustomUser.objects.all()
-    context = {
-        'usuarios': usuarios,
-        'form': form,
-        'timestamp': datetime.now().timestamp()
-    }
-    return render(request, 'users.html', context)
-
-
-# CRIAR USUARIO
-def add_user(request):
-    usuarios = CustomUser.objects.all()
-    if request.method == 'POST':
-        form = UsuarioCreateForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Usuário criado com sucesso!')
-            return redirect('users')
-    else:
-        form = UsuarioCreateForm()
-
-    return render(request, 'users.html', {'form': form, 'usuarios': usuarios})
-
-
 # PERMISSÕES
 @login_required
 def edit_product(request, product_id):
@@ -248,3 +220,72 @@ def delete_product(request, product_id):
 
     product.delete()
     return redirect('product_list')
+
+
+# USERS PAGE
+@login_required
+def users(request):
+    form = UsuarioCreateForm()
+    usuarios = CustomUser.objects.all()
+    context = {
+        'usuarios': usuarios,
+        'form': form,
+        'timestamp': datetime.now().timestamp()
+    }
+    return render(request, 'users.html', context)
+
+
+# CRIAR USUARIO
+def add_user(request):
+    usuarios = CustomUser.objects.all()
+    if request.method == 'POST':
+        form = UsuarioCreateForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Usuário criado com sucesso!')
+            return redirect('users')
+    else:
+        form = UsuarioCreateForm()
+
+    return render(request, 'users.html', {'form': form, 'usuarios': usuarios})
+
+# EDITAR USUARIO
+def edit_user(request, id):
+    usuario = get_object_or_404(CustomUser, id=id)
+    
+    if request.method == 'POST':
+        form = UsuarioCreateForm(request.POST, instance=usuario)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Usuário atualizado com sucesso!")
+            return redirect('users')
+    else:
+        form = UsuarioCreateForm(instance=usuario)  # Preenche o formulário com os dados do usuário
+
+    return render(request, 'editUser.html', {'form': form, 'usuario': usuario})
+
+# DESATIVAR USUARIO
+@login_required
+def disable_user(request, id):
+    usuario = get_object_or_404(CustomUser, id=id)
+
+    if usuario.is_active:
+        usuario.is_active = False
+        usuario.save()
+        messages.add_message(request, messages.ERROR, 'Usuário DESATIVADO com sucesso!', extra_tags='dark')
+    else:
+        messages.error(request, "O usuário já está desativado.")
+
+    return redirect('users')
+
+def enable_user(request, id):
+    usuario = get_object_or_404(CustomUser, id=id)
+
+    if not usuario.is_active:
+        usuario.is_active = True
+        usuario.save()
+        messages.add_message(request, messages.SUCCESS, 'Usuário ATIVADO com sucesso!', extra_tags='success')
+    else:
+        messages.warning(request, "Este usuário já está ativo.")
+
+    return redirect('users')

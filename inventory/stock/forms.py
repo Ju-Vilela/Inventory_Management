@@ -52,7 +52,8 @@ class UsuarioCreateForm(UserCreationForm):
     )
 
     username = forms.CharField(
-        widget=forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'Usuário'})
+        widget=forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'Usuário'}),
+        required=True
     )
     first_name = forms.CharField(
         required=False,
@@ -77,4 +78,15 @@ class UsuarioCreateForm(UserCreationForm):
     class Meta:
         model = CustomUser
         fields = ['username', 'first_name', 'last_name', 'email', 'cargo', 'password1', 'password2']
+
+    def __init__(self, *args, **kwargs):
+        # Se o formulário não estiver sendo passado com uma instância de usuário (edição), mostramos o campo 'username'
+        instance = kwargs.get('instance', None)
+        super().__init__(*args, **kwargs)
+
+        if instance:
+            # Se for edição (com instância de usuário), podemos remover o campo 'username'
+            del self.fields['username']
+
+        
 
