@@ -88,6 +88,8 @@ a {
     color: inherit;
 }
 
+a:hover{ color: initial; }
+
 /* Estilização do Formulário */
 .form-group {
     margin-bottom: 15px;

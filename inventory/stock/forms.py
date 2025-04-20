@@ -11,11 +11,47 @@ class CustomLoginForm(AuthenticationForm):
         widget=forms.PasswordInput(attrs={'class': 'input-field', 'placeholder': 'Password'})
     )
 
-# CADASTRO PRODUTO FORM
+from django import forms
+from .models import Produto
+
+# FORMULÁRIO DE CADASTRO DE PRODUTO
 class ProdutoForm(forms.ModelForm):
+    item = forms.CharField(
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Item'})
+    )
+    categoria = forms.CharField(
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Categoria'})
+    )
+    marca = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Marca'})
+    )
+    validade = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+    vendas = forms.IntegerField(
+        required=False,
+        min_value=0,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0'})
+    )
+    estoque = forms.IntegerField(
+        required=True,
+        min_value=0,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0'})
+    )
+    preco = forms.DecimalField(
+        required=True,
+        max_digits=10,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '00,00'})
+    )
+
     class Meta:
         model = Produto
-        fields = ['item', 'categoria', 'marca', 'vendas', 'estoque', 'preco']
+        fields = ['item', 'categoria', 'marca', 'validade', 'vendas', 'estoque', 'preco']
+
 
 # PERFIL FORM
 class ProfileForm(forms.ModelForm):

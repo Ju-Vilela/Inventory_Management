@@ -8,10 +8,12 @@
 {% block title %}Produtos{% endblock %}
 
 {% block content %}
-<h2>Cadastrar Produto</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Cadastrar</button>
-</form>
+<h1 class="mb-4"><i class="bi bi-cart-plus-fill icon"></i> Cadastrar Produto</h1>
+<div class="container mt-4">
+    <form method="post" class="card p-4 shadow-sm">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-blue mt-2">Cadastrar</button>
+    </form>
+</div>
 {% endblock %}
