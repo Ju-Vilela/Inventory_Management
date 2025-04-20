@@ -137,6 +137,14 @@ a:hover{ color: initial; }
     border-radius: 10px;
 }
 
+/* PLACEHOLDER */
+.input-field::placeholder,
+.form-control::placeholder,
+.form-select::placeholder {
+    color: #888888;
+    opacity: 1;
+}
+
 /* 🌙 DARK MODE OVERRIDES */
 
 body.dark {
@@ -262,6 +270,11 @@ body.dark .criar-usuario-page select {
     border: 1px solid #444;
 }
 
+body.dark .modal-content {
+    background-color: #252537;
+    color: #f1f1f1;
+    border: 1px solid #444;
+}
 
 
 /* 🌞 LIGHT MODE OVERRIDES */

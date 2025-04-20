@@ -10,6 +10,9 @@ from .forms import ProdutoForm, ProfileForm, UsuarioCreateForm, AlterarSenhaForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.hashers import check_password
 
+# PERMISSÕES
+def tem_permissao_usuario(usuario, permissao):
+    return permissao in permissoes_por_cargo.get(usuario.cargo, [])
 
 # HOME PAGE
 @login_required
@@ -40,17 +43,76 @@ def lista_produtos(request):
     }
     return render(request, 'productsList.html', context)
 
+# EDITAR PRODUTO
+@login_required
+def editar_produto(request, produto_id):
+    produto = get_object_or_404(Produto, id=produto_id)
+
+    if request.method == 'POST':
+        form = ProdutoForm(request.POST, instance=produto)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Produto atualizado com sucesso!')
+            return redirect('home')
+    else:
+        form = ProdutoForm(instance=produto)
+
+    context = {
+        'form': form,
+        'timestamp': datetime.now().timestamp(),
+        'editando': True,
+        'produto_id': produto.id
+    }
+    return render(request, 'products.html', context)
+
+
+# DESATIVAR PRODUTO
+@login_required
+def desativar_produto(request, produto_id):
+    produto = get_object_or_404(Produto, id=produto_id)
+
+    # Verificar se o usuário tem permissão para alterar o status do produto
+    if Permissoes.ALTERAR_STATUS not in permissoes_usuario:
+        messages.error(request, "Você não tem permissão para alterar o status deste produto.")
+        return redirect('home')
+
+    if produto.ativo:  # Verifica se o produto está ativo antes de desativá-lo
+        produto.ativo = False
+        produto.save()
+        messages.success(request, "Produto desativado com sucesso!")
+    else:
+        messages.warning(request, "Este produto já está desativado.")
+
+    return redirect('home')
+
+
 # CADASTRO PAGE
 @login_required
 def cadastrar_produto(request):
     if request.method == 'POST':
         form = ProdutoForm(request.POST)
         if form.is_valid():
-            form.save()
+            produto = form.save(commit=False)
+
+            nova_categoria = form.cleaned_data.get('nova_categoria')
+            categoria = form.cleaned_data.get('categoria')
+            produto.categoria = nova_categoria or categoria
+
+            produto.marca = produto.marca or "sem marca"
+            produto.vendas = produto.vendas or 0
+            produto.estoque = produto.estoque or 0
+            produto.preco = produto.preco or 0.00
+
+            produto.save()
+            messages.success(request, 'Produto cadastrado com sucesso!', extra_tags='success')
             return redirect('home')
+        else:
+            messages.error(request, 'Erro ao cadastrar produto. Verifique os campos.', extra_tags='danger')
     else:
         form = ProdutoForm()
+
     return render(request, 'products.html', {'form': form})
+
 
 # PERFIL PAGE
 @login_required
@@ -190,38 +252,6 @@ def lista_usuarios(request):
     }
     return render(request, 'users.html', context)
 
-
-# PERMISSÕES
-@login_required
-def edit_product(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
-
-    if not product.can_edit(request.user):
-        messages.error(request, "Você não tem permissão para editar este produto.")
-        return redirect('home')  # Ou outra página apropriada
-
-    if request.method == 'POST':
-        product.name = request.POST.get('name')
-        product.description = request.POST.get('description')
-        product.quantity = request.POST.get('quantity')
-        product.price = request.POST.get('price')
-        product.save()
-        return redirect('product_list')
-    
-    return render(request, 'edit_product.html', {'product': product})
-
-@login_required
-def delete_product(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
-
-    if not product.can_delete(request.user):
-        messages.error(request, "Você não tem permissão para excluir este produto.")
-        return redirect('home')  # Ou outra página apropriada
-
-    product.delete()
-    return redirect('product_list')
-
-
 # USERS PAGE
 @login_required
 def users(request):
@@ -278,6 +308,7 @@ def disable_user(request, id):
 
     return redirect('users')
 
+# ATIVAR USUARIO
 def enable_user(request, id):
     usuario = get_object_or_404(CustomUser, id=id)
 

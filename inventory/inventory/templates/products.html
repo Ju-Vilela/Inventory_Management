@@ -1,19 +1,103 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/home.css' %}?v={{ timestamp }}">
-{% endblock %}
-
 {% block title %}Produtos{% endblock %}
 
 {% block content %}
+{% if editando %}
+<h1 class="mb-4"><i class="bi bi-pencil-square icon"></i> Editar Produto</h1>
+{% else %}
 <h1 class="mb-4"><i class="bi bi-cart-plus-fill icon"></i> Cadastrar Produto</h1>
-<div class="container mt-4">
-    <form method="post" class="card p-4 shadow-sm">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-blue mt-2">Cadastrar</button>
-    </form>
-</div>
+{% endif %}
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    <div class="row mb-3">
+        <div class="col-md-6 col-12 mb-2">
+            {{ form.item.label_tag }}
+            {{ form.item }}
+        </div>
+        <div class="col-md-6 col-12 mb-2">
+            {{ form.marca.label_tag }}
+            {{ form.marca }}
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-6 col-12 mb-2">
+            {{ form.categoria.label_tag }}
+            {{ form.categoria }}
+        </div>
+        <div class="col-md-6 col-12 mb-2">
+            {{ form.nova_categoria.label_tag }}
+            {{ form.nova_categoria }}
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-6 col-12 mb-2">
+            {{ form.validade.label_tag }}
+            {{ form.validade }}
+        </div>
+        <div class="col-md-3 col-6 mb-2">
+            {{ form.vendas.label_tag }}
+            {{ form.vendas }}
+        </div>
+        <div class="col-md-3 col-6 mb-2">
+            {{ form.estoque.label_tag }}
+            {{ form.estoque }}
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-6 col-12 mb-2">
+            {{ form.preco.label_tag }}
+            {{ form.preco }}
+        </div>
+    </div>
+
+    {% if editando %}
+    <div class="row mb-3">
+        <div class="col-md-6 col-12 mb-2">
+            {{ form.ativo.label_tag }}
+            {{ form.ativo }} <!-- Checkbox para ativo/desativado -->
+        </div>
+    </div>
+    {% endif %}
+
+    <button type="submit" class="btn btn-blue">
+        {% if editando %}Salvar Alterações{% else %}Cadastrar Produto{% endif %}
+    </button>
+</form>
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.8/inputmask.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        Inputmask({
+            "alias": "currency",
+            "prefix": "R$ ",
+            "groupSeparator": ".",
+            "radixPoint": ",",
+            "digits": 2,
+            "autoUnmask": true
+        }).mask(document.querySelector('[name="preco"]'));
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const novaCategoriaDiv = document.querySelector('[name="nova_categoria"]').closest('div');
+        const categoriaSelect = document.querySelector('[name="categoria"]');
+
+        function toggleNovaCategoria() {
+            if (categoriaSelect.value === '') {
+                novaCategoriaDiv.style.display = 'block';  // Mostra o campo de nova categoria
+            } else {
+                novaCategoriaDiv.style.display = 'none';  // Esconde o campo de nova categoria
+                document.querySelector('[name="nova_categoria"]').value = '';  // Limpa o valor
+            }
+        }
+
+        categoriaSelect.addEventListener('change', toggleNovaCategoria);
+        toggleNovaCategoria();  // Função já rodando para verificar o estado inicial
+    });
+</script>
+{% endblock %}
 {% endblock %}

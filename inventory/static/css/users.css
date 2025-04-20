@@ -13,6 +13,15 @@ body.dark .table-bordered td {
     border-color: #444;
 }
 
+/* Ajuste do hover no tema escuro */
+body.dark .table-hover tbody tr:hover {
+    background-color: #333854 !important;
+}
+
+body.dark .table-hover tbody tr:hover td {
+    color: var(--main-color) !important;
+}
+
 body.dark .card {
     background-color: #252537;
     border-color: #444;
@@ -20,14 +29,10 @@ body.dark .card {
 }
 
 body.dark .btn-primary {
-    background-color: #4a4a7d;
+    background-color: var(--dark-main-color);
     border: none;
 }
 
-body.dark .btn-danger {
-    background-color: #993333;
-    border: none;
-}
 
 /* Estilização do Formulário */
 .form-container {

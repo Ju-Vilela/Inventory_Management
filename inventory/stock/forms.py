@@ -16,41 +16,91 @@ from .models import Produto
 
 # FORMULÁRIO DE CADASTRO DE PRODUTO
 class ProdutoForm(forms.ModelForm):
+    NOVA_CATEGORIA_PLACEHOLDER = "Nova categoria (opcional)"
+
     item = forms.CharField(
-        required=True,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Item'})
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Nome do Item'
+        })
     )
-    categoria = forms.CharField(
-        required=True,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Categoria'})
+
+    categoria = forms.ChoiceField(
+        choices=[],  # preenchido no __init__
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        required=False
     )
+
+    nova_categoria = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control mt-2',
+            'placeholder': NOVA_CATEGORIA_PLACEHOLDER
+        })
+    )
+
     marca = forms.CharField(
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Marca'})
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Marca'
+        })
     )
+
     validade = forms.DateField(
         required=False,
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'form-control'
+        })
     )
+
     vendas = forms.IntegerField(
         required=False,
-        min_value=0,
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0'})
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Vendas'
+        })
     )
+
     estoque = forms.IntegerField(
-        required=True,
-        min_value=0,
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0'})
+        required=False,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Estoque'
+        })
     )
+
     preco = forms.DecimalField(
-        required=True,
+        required=False,
         max_digits=10,
         decimal_places=2,
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '00,00'})
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'R$ 00,00'
+        })
     )
 
     class Meta:
         model = Produto
-        fields = ['item', 'categoria', 'marca', 'validade', 'vendas', 'estoque', 'preco']
+        fields = ['nome', 'marca', 'categoria', 'nova_categoria', 'validade', 'vendas', 'estoque', 'preco', 'ativo']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        categoria = cleaned_data.get('categoria')
+        nova_categoria = cleaned_data.get('nova_categoria')
+
+        if not categoria and not nova_categoria:
+            raise forms.ValidationError("Você precisa selecionar uma categoria existente ou digitar uma nova.")
+        
+        if categoria and nova_categoria:
+            raise forms.ValidationError("Escolha uma categoria existente **ou** digite uma nova, não os dois.")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        categorias = Produto.objects.values_list('categoria', flat=True).distinct()
+        self.fields['categoria'].choices = [('', 'Selecione uma categoria')] + [(c, c) for c in categorias]
 
 
 # PERFIL FORM

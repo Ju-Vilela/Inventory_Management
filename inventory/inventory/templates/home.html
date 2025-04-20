@@ -1,53 +1,70 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Inicio{% endblock %}
-
+{% block title %}Produtos{% endblock %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/home.css' %}?v={{ timestamp }}">
+<link rel="stylesheet" href="{% static 'css/home.css' %}?v={{ timestamp }}">
 {% endblock %}
 
 {% block content %}
-<header class="main-header">
-    <h1>Produtos</h1>
-    <div class="actions">
-        <input type="text" placeholder="Search..." />
-        <button class="btn-icon"><i class="icon bi bi-search"></i></button>
-        <button class="btn-icon"><i class="icon bi bi-check2-square"></i></button>
-        <a href="{% url 'products' %}" class="btn-blue">
-            <i class="icon bi bi-cart-plus"></i>&nbsp;&nbsp; Add Produto
-        </a>
-    </div>
-</header>
+<div class="dashboard">
+    <main class="main">
+        <header class="main-header">
+            <h1>Produtos</h1>
+            <div class="actions">
+                <input type="text" placeholder="Search..." />
+                <button class="btn-blue"><i class="icon bi bi-cart-plus"></i>&nbsp;&nbsp; Add Produto</button>
+                <button class="btn-icon"><i class="icon bi bi-search"></i></button>
+                <button class="btn-icon"><i class="icon bi bi-check2-square"></i></button>
+            </div>
+        </header>
+        
+        <table class="product-table">
+            <thead>
+                <tr>
+                    <th>Items</th>
+                    <th>Categoria</th>
+                    <th>Marca</th>
+                    <th>Validade</th>
+                    <th>Vendas</th>
+                    <th>Estoque</th>
+                    <th>Preço</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if produtos %}
+                {% for p in produtos %}
+                <tr class="clickable-row" data-href="{% url 'editProduct' p.id %}">
+                    <td>{{ p.item }}</td>
+                    <td>{{ p.categoria }}</td>
+                    <td>{{ p.marca }}</td>
+                    <td>{{ p.validade|date:"d/m/Y" }}</td>
+                    <td>{{ p.vendas }}</td>
+                    <td>{{ p.estoque }}</td>
+                    <td>R$ {{ p.preco|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="7">Nenhum produto encontrado.</td>
+                </tr>
+                {% endif %}
+            </tbody>
 
-<table class="product-table">
-    <thead>
-        <tr>
-            <th>Items</th>
-            <th>Categoria</th>
-            <th>Marca</th>
-            <th>Validade</th>
-            <th>Vendas</th>
-            <th>Estoque</th>
-            <th>Preço</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for produto in produtos %}
-        <tr>
-            <td>{{ produto.item }}</td>
-            <td>{{ produto.categoria }}</td>
-            <td>{{ produto.marca }}</td>
-            <td>{{ produto.validade }}</td>
-            <td>{{ produto.vendas }}</td>
-            <td>{{ produto.estoque }}</td>
-            <td>R$ {{ produto.preco }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="7">Nenhum produto encontrado.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        </table>
+
+    </main>
+</div>
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".clickable-row").forEach(row => {
+            row.addEventListener("click", () => {
+                window.location.href = row.dataset.href;
+            });
+        });
+    });
+</script>
+
+{% endblock %}
 {% endblock %}
