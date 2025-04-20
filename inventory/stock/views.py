@@ -9,6 +9,7 @@ from .models import Produto, CustomUser, LogDeAcao, Product
 from .forms import ProdutoForm, ProfileForm, UsuarioCreateForm, AlterarSenhaForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.hashers import check_password
+from django.core.paginator import Paginator
 
 # PERMISSÕES
 def tem_permissao_usuario(usuario, permissao):
@@ -57,6 +58,12 @@ def editar_produto(request, produto_id):
         if form.is_valid():
             form.save()
             messages.success(request, "Produto atualizado com sucesso!")
+            log = LogDeAcao(
+                usuario=request.user,
+                acao="Edição de Produto",
+                descricao=f"Produto {produto.item} {produto.marca} foi editado com sucesso."
+            )
+            log.save()
             return redirect('home')
     else:
         form = ProdutoForm(instance=produto)
@@ -77,12 +84,25 @@ def desativar_produto(request, produto_id):
     # Verificar se o usuário tem permissão para alterar o status do produto
     if Permissoes.ALTERAR_STATUS not in permissoes_usuario:
         messages.error(request, "Você não tem permissão para alterar o status deste produto.")
+        log = LogDeAcao(
+            usuario=request.user,
+            acao="Usuario sem permissão",
+            descricao=f"Tentativa de edição para o Produto: {produto.item} {produto.item} {produto.marca}."
+        )
+        log.save()
         return redirect('home')
 
     if produto.ativo:  # Verifica se o produto está ativo antes de desativá-lo
         produto.ativo = False
         produto.save()
         messages.success(request, "Produto desativado com sucesso!")
+        log = LogDeAcao(
+            usuario=request.user,
+            acao="Desativação de Produto",
+            descricao=f"Produto {produto.item} {produto.marca} foi desativado com sucesso."
+        )
+        log.save()
+
     else:
         messages.warning(request, "Este produto já está desativado.")
 
@@ -108,6 +128,13 @@ def cadastrar_produto(request):
 
             produto.save()
             messages.success(request, 'Produto cadastrado com sucesso!', extra_tags='success')
+            log = LogDeAcao(
+                usuario=request.user,
+                acao="Cadastro de Produto",
+                descricao=f"Produto {produto.item} {produto.marca} foi cadastrado com sucesso."
+            )
+            log.save()
+
             return redirect('home')
         else:
             messages.error(request, 'Erro ao cadastrar produto. Verifique os campos.', extra_tags='danger')
@@ -225,11 +252,18 @@ def perfil(request):
     else:
         profile_form = ProfileForm(instance=user)
 
+    historico = LogDeAcao.objects.filter(usuario=user).order_by('-data')
+    
+    paginator = Paginator(historico, 10)  # 10 ações por página
+    page_number = request.GET.get('page')
+    historico_page = paginator.get_page(page_number)
+
     context = {
         'profile_form': profile_form,
         'usuario': user,
         'senha_form': senha_form,
         'historico': historico,
+        'historico': historico_page,
         'timestamp': datetime.now().timestamp(),
         'ultimo_login': localtime(user.last_login),
         'data_criacao': localtime(user.date_joined),
@@ -276,6 +310,12 @@ def add_user(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Usuário criado com sucesso!')
+            log = LogDeAcao(
+                usuario=request.user,
+                acao="Ativação de Usuario",
+                descricao=f"Usuario {usuarios.username} {usuarios.cargo} foi criado com sucesso."
+            )
+            log.save()
             return redirect('users')
     else:
         form = UsuarioCreateForm()
@@ -291,6 +331,12 @@ def edit_user(request, id):
         if form.is_valid():
             form.save()
             messages.success(request, "Usuário atualizado com sucesso!")
+            log = LogDeAcao(
+                usuario=request.user,
+                acao="Edição de Usuario",
+                descricao=f"Usuario {usuario.username} {usuario.cargo} foi editado com sucesso."
+            )
+            log.save()
             return redirect('users')
     else:
         form = UsuarioCreateForm(instance=usuario)  # Preenche o formulário com os dados do usuário
@@ -306,6 +352,12 @@ def disable_user(request, id):
         usuario.is_active = False
         usuario.save()
         messages.add_message(request, messages.ERROR, 'Usuário DESATIVADO com sucesso!', extra_tags='dark')
+        log = LogDeAcao(
+            usuario=request.user,
+            acao="Desativação de Usuario",
+            descricao=f"Usuario {usuario.username} {usuario.cargo} foi desativado com sucesso."
+        )
+        log.save()
     else:
         messages.error(request, "O usuário já está desativado.")
 
@@ -319,6 +371,13 @@ def enable_user(request, id):
         usuario.is_active = True
         usuario.save()
         messages.add_message(request, messages.SUCCESS, 'Usuário ATIVADO com sucesso!', extra_tags='success')
+        log = LogDeAcao(
+            usuario=request.user,
+            acao="Ativação de Usuario",
+            descricao=f"Usuario {usuario.username} {usuario.cargo} foi ativado com sucesso."
+        )
+        log.save()
+
     else:
         messages.warning(request, "Este usuário já está ativo.")
 

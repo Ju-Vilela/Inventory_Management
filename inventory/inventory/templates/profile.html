@@ -90,14 +90,34 @@
                 <h2><i class="bi bi-clock-history"></i> Histórico de Ações</h2>
                 {% if historico %}
                 <ul class="historico-lista">
-                    {% for acao in historico %}
-                    <li>
-                        <span class="acao-data">{{ acao.data|date:"d.m.Y H:i" }}</span> —
-                        <span class="acao-tipo">{{ acao.acao }}</span>
-                        <span class="acao-descricao">{{ acao.descricao }}</span>
-                    </li>
-                    {% endfor %}
+                    <ul class="historico-lista">
+                        {% for acao in historico %}
+                        <div class="alert alert-primary">
+                            <span class="acao-data">{{ acao.data|date:"d.m.Y H:i" }}</span> —
+                            <span class="acao-tipo">{{ acao.acao }}</span>
+                            <span class="acao-descricao">{{ acao.descricao }}</span>
+                        </div>
+                        {% endfor %}
+                    </ul>
                 </ul>
+                <div class="pagination">
+                    <span class="step-links">
+                        {% if historico.has_previous %}
+                        <a href="?page=1">&laquo; primeira</a>
+                        <a href="?page={{ historico.previous_page_number }}">anterior</a>
+                        {% endif %}
+                
+                        <span class="current">
+                            Página {{ historico.number }} de {{ historico.paginator.num_pages }}.
+                        </span>
+                
+                        {% if historico.has_next %}
+                        <a href="?page={{ historico.next_page_number }}">próxima</a>
+                        <a href="?page={{ historico.paginator.num_pages }}">última &raquo;</a>
+                        {% endif %}
+                    </span>
+                </div>
+ 
                 {% else %}
                 <p>Sem ações registradas ainda...</p>
                 {% endif %}

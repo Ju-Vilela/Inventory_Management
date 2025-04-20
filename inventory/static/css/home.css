@@ -25,7 +25,9 @@
 .product-table th,
 .product-table td {
     padding: 16px;
+    padding-right: 20px;
     text-align: left;
+    position: relative;
 }
 
 .product-table tbody tr:hover {
@@ -54,4 +56,28 @@
 .product-table tbody tr:not(.disabled-row):hover {
     background-color: #1e293b;
     border-left: 4px solid var(--main-color);
+}
+
+
+/* THEAD */
+.product-table th[data-column] {
+    cursor: pointer;
+    user-select: none;
+}
+
+.product-table th::after {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 0.8em;
+}
+
+.product-table th.ascending::after {
+    content: "▲";
+}
+
+.product-table th.descending::after {
+    content: "▼";
 }

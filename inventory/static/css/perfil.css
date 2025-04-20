@@ -185,3 +185,42 @@ legend {
     flex-direction: column;
     justify-content: space-between;
 }
+
+
+/* perfil.css */
+.perfil-container {
+    padding: 20px;
+}
+
+.card {
+    margin-bottom: 20px;
+    border-radius: 10px;
+}
+
+.card-header {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.card-body {
+    font-size: 1rem;
+}
+
+.list-group-item {
+    border: none;
+}
+
+.page-number {
+    margin: 0 10px;
+    font-weight: bold;
+}
+
+.pagination-wrapper .pagination {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pagination a {
+    text-decoration: none;
+}

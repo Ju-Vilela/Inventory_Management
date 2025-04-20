@@ -21,29 +21,26 @@
                 <button class="btn btn-blue">
                     <i class="bi bi-cart-plus"></i>&nbsp;&nbsp; Add Produto
                 </button>
-                <button class="btn btn-outline-success">
-                    <i class="bi bi-check2-square"></i>
-                </button>
             </div>
         </header>
 
         <table class="product-table">
             <thead>
                 <tr>
-                    <th>Items</th>
-                    <th>Categoria</th>
-                    <th>Marca</th>
-                    <th>Validade</th>
-                    <th>Vendas</th>
-                    <th>Estoque</th>
-                    <th>Preço</th>
+                    <th data-column="item">Items</th>
+                    <th data-column="categoria">Categoria</th>
+                    <th data-column="marca">Marca</th>
+                    <th data-column="validade">Validade</th>
+                    <th data-column="vendas">Vendas</th>
+                    <th data-column="estoque">Estoque</th>
+                    <th data-column="preco">Preço</th>
                 </tr>
             </thead>
             <tbody id="produtoTabela">
                 {% if produtos %}
                 {% for p in produtos %}
                 <tr class="clickable-row {% if not p.ativo %}disabled-row{% endif %}"
-                    data-href="{% url 'editProduct' p.id %}">
+                    data-href="{% url 'editProduct' p.id %}" data-validade="{{ p.validade }}">
                     <td>
                         {% if not p.ativo %}
                         <i class="bi bi-slash-circle-fill text-danger" title="Produto inativo"></i>
@@ -70,37 +67,5 @@
 
     </main>
 </div>
-{% block extra_js %}
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Filtrar produtos ao digitar no campo de busca
-        const buscaProduto = document.getElementById('buscaProdutos');
-        const tabelaProduto = document.getElementById('produtoTabela');
-
-        buscaProduto.addEventListener('input', function () {
-            const searchTerm = buscaProduto.value.toLowerCase();
-            const rows = tabelaProduto.getElementsByTagName('tr');
-
-            Array.from(rows).forEach(function (row) {
-                const item = row.cells[0].textContent.toLowerCase();
-                const categoria = row.cells[1].textContent.toLowerCase();
-                const marca = row.cells[2].textContent.toLowerCase();
-
-                if (item.includes(searchTerm) || categoria.includes(searchTerm) || marca.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        });
-
-        // Tornar as linhas clicáveis
-        document.querySelectorAll(".clickable-row").forEach(row => {
-            row.addEventListener("click", () => {
-                window.location.href = row.dataset.href;
-            });
-        });
-    });
-</script>
-{% endblock %}
+{% block extra_js %}<script src="{% static 'js/home.js' %}"></script> {% endblock %}
 {% endblock %}
