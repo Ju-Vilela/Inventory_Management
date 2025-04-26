@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Script para esconder o alerta após 5 segundos
 document.addEventListener('DOMContentLoaded', function () {
-    const alert = document.querySelector('.alert');
+    const alert = document.querySelector('.alert.alert-dismissible');
     if (alert) {
         setTimeout(function () {
             alert.classList.remove('show');

@@ -7,65 +7,60 @@
 {% endblock %}
 
 {% block content %}
-<div class="dashboard">
-    <main class="main">
-        <header class="main-header">
-            <h1>Produtos</h1>
-            <div class="actions d-flex gap-2 flex-wrap">
-                <div class="input-group w-auto">
-                    <input type="text" class="form-control" id="buscaProdutos" placeholder="Buscar produtos..." />
-                    <button class="btn btn-outline-secondary" type="button">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </div>
-                <button class="btn btn-blue">
-                    <i class="bi bi-cart-plus"></i>&nbsp;&nbsp; Add Produto
+    <header class="main-header">
+        <h1>Produtos</h1>
+        <div class="actions d-flex gap-2 flex-wrap">
+            <div class="input-group w-auto">
+                <input type="text" class="form-control" id="buscaProdutos" placeholder="Buscar produtos..." />
+                <button class="btn btn-outline-secondary" type="button">
+                    <i class="bi bi-search"></i>
                 </button>
             </div>
-        </header>
+            <button class="btn btn-blue">
+                <i class="bi bi-cart-plus"></i>&nbsp;&nbsp; Add Produto
+            </button>
+        </div>
+    </header>
 
-        <table class="product-table">
-            <thead>
-                <tr>
-                    <th data-column="item">Items</th>
-                    <th data-column="categoria">Categoria</th>
-                    <th data-column="marca">Marca</th>
-                    <th data-column="validade">Validade</th>
-                    <th data-column="vendas">Vendas</th>
-                    <th data-column="estoque">Estoque</th>
-                    <th data-column="preco">Preço</th>
-                </tr>
-            </thead>
-            <tbody id="produtoTabela">
-                {% if produtos %}
-                {% for p in produtos %}
-                <tr class="clickable-row {% if not p.ativo %}disabled-row{% endif %}"
-                    data-href="{% url 'editProduct' p.id %}" data-validade="{{ p.validade }}">
-                    <td>
-                        {% if not p.ativo %}
-                        <i class="bi bi-slash-circle-fill text-danger" title="Produto inativo"></i>
-                        {% endif %}
-                        &nbsp;&nbsp;
-                        {{ p.item }}
-                    </td>
-                    <td>{{ p.categoria }}</td>
-                    <td>{{ p.marca }}</td>
-                    <td>{{ p.validade|date:"d/m/Y" }}</td>
-                    <td>{{ p.vendas }}</td>
-                    <td>{{ p.estoque }}</td>
-                    <td>R$ {{ p.preco|floatformat:2 }}</td>
-                </tr>
-                {% endfor %}
-                {% else %}
-                <tr>
-                    <td colspan="7">Nenhum produto encontrado.</td>
-                </tr>
-                {% endif %}
-            </tbody>
+    <table class="product-table">
+        <thead>
+            <tr>
+                <th data-column="item">Items</th>
+                <th data-column="categoria">Categoria</th>
+                <th data-column="marca">Marca</th>
+                <th data-column="validade">Validade</th>
+                <th data-column="vendas">Vendas</th>
+                <th data-column="estoque">Estoque</th>
+                <th data-column="preco">Preço</th>
+            </tr>
+        </thead>
+        <tbody id="produtoTabela">
+            {% if produtos %}
+            {% for p in produtos %}
+            <tr class="clickable-row {% if not p.ativo %}disabled-row{% endif %}"
+                data-href="{% url 'editProduct' p.id %}" data-validade="{{ p.validade }}">
+                <td>
+                    {% if not p.ativo %}
+                    <i class="bi bi-slash-circle-fill text-danger" title="Produto inativo"></i>
+                    {% endif %}
+                    &nbsp;&nbsp;
+                    {{ p.item }}
+                </td>
+                <td>{{ p.categoria }}</td>
+                <td>{{ p.marca }}</td>
+                <td>{{ p.validade|date:"d/m/Y" }}</td>
+                <td>{{ p.vendas }}</td>
+                <td>{{ p.estoque }}</td>
+                <td>R$ {{ p.preco|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="7">Nenhum produto encontrado.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
 
-        </table>
-
-    </main>
-</div>
-{% block extra_js %}<script src="{% static 'js/home.js' %}"></script> {% endblock %}
+    {% block extra_js %}<script src="{% static 'js/home.js' %}"></script> {% endblock %}
 {% endblock %}

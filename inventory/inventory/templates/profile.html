@@ -92,11 +92,17 @@
                 <ul class="historico-lista">
                     <ul class="historico-lista">
                         {% for acao in historico %}
-                        <div class="alert alert-primary">
-                            <span class="acao-data">{{ acao.data|date:"d.m.Y H:i" }}</span> —
-                            <span class="acao-tipo">{{ acao.acao }}</span>
-                            <span class="acao-descricao">{{ acao.descricao }}</span>
-                        </div>
+                            <div class="alert {{ acao.alert_class }} d-flex align-items-center" role="alert">
+                                <!--<div class="alert alert-{{ acao.tipo }}" role="alert">-->
+                                <div class="bi flex-shrink-0 me-2" aria-label="Info:">
+                                    <i class="bi bi-info-circle-fill icon" style="margin: 0 20px;"></i>
+                                </div>
+                                <div>
+                                    <span class="acao-tipo">{{ acao.acao }}</span> —
+                                    <span class="acao-descricao">{{ acao.descricao }}</span> | 
+                                    <span class="acao-data">{{ acao.data|date:"d.m.Y H:i" }}</span>
+                                </div>
+                            </div>
                         {% endfor %}
                     </ul>
                 </ul>

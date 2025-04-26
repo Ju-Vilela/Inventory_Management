@@ -18,12 +18,24 @@ class Produto(models.Model):
 # HISTORICO
 class LogDeAcao(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    tipo = models.CharField(max_length=20, default='info')  # <-- novo campo!
     acao = models.CharField(max_length=50)
     descricao = models.TextField()
     data = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.usuario.username} - {self.acao} - {self.data}"
+
+    @property
+    def alert_class(self):
+        ALERT_CLASSES = {
+            'success': 'alert-success',
+            'info': 'alert-primary',
+            'warning': 'alert-warning',
+            'danger': 'alert-danger',
+        }
+        return ALERT_CLASSES.get(self.tipo.lower(), 'alert-primary')
+
 
 # CUSTOMUSER
 from django.contrib.auth.models import AbstractUser
@@ -61,23 +73,4 @@ class CustomUser(AbstractUser):
     
     def __str__(self):
         return self.username
-
-
-class Product(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    quantity = models.PositiveIntegerField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.name
-
-    def can_edit(self, user):
-        return user.is_admin or user.is_manager
-
-    def can_delete(self, user):
-        return user.is_admin
-
 
