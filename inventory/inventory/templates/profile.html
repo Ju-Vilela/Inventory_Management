@@ -77,7 +77,7 @@
                                 {{ senha_form.as_p }}
                             </fieldset>
                         </div>
-                    <button type="submit" name="submit_senha" class="btn-blue">Alterar Senha</button>
+                        <button type="submit" name="submit_senha" class="btn-blue">Alterar Senha</button>
                 </form>
             </div>
         </div>
@@ -90,21 +90,31 @@
                 <h2><i class="bi bi-clock-history"></i> Histórico de Ações</h2>
                 {% if historico %}
                 <ul class="historico-lista">
-                    <ul class="historico-lista">
-                        {% for acao in historico %}
-                            <div class="alert {{ acao.alert_class }} d-flex align-items-center" role="alert">
-                                <!--<div class="alert alert-{{ acao.tipo }}" role="alert">-->
-                                <div class="bi flex-shrink-0 me-2" aria-label="Info:">
-                                    <i class="bi bi-info-circle-fill icon" style="margin: 0 20px;"></i>
-                                </div>
-                                <div>
-                                    <span class="acao-tipo">{{ acao.acao }}</span> —
-                                    <span class="acao-descricao">{{ acao.descricao }}</span> | 
-                                    <span class="acao-data">{{ acao.data|date:"d.m.Y H:i" }}</span>
+                    {% for acao in historico %}
+                        <li class="historico-item">
+                            <div class="alert alert-{{ acao.alert_class }} align-items-center" role="alert">                                
+                                <div class="row">
+                                    <div class="col-1 align-self-center text-center">
+                                        <div class="bi flex-shrink-0 me-2" aria-label="Info:">
+                                            <i class="icon bi bi-hourglass-split"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <strong>{{ acao.usuario.username }}</strong>
+                                        <small class="text-muted">em {{ acao.data|date:"d.m.Y H:i" }}</small><br>
+                                        <span class="text-capitalize fw-bold">{{ acao.acao }}</span>:
+                                        <span class="fst-italic border-bottom border-{{acao.alert_class}}">{{ acao.descricao }}</span>
+                                        {% if acao.valor_anterior and acao.valor_novo %}
+                                        <br>
+                                        <span class="text-muted">antes:</span> {{ acao.valor_anterior }}
+                                        <span class="text-muted ms-2">depois:</span> {{ acao.valor_novo }}
+                                        {% else %}
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
-                        {% endfor %}
-                    </ul>
+                        </li>
+                    {% endfor %}
                 </ul>
                 <div class="pagination">
                     <span class="step-links">
@@ -114,7 +124,7 @@
                         {% endif %}
                 
                         <span class="current">
-                            Página {{ historico.number }} de {{ historico.paginator.num_pages }}.
+                            Página {{ historico.number }} - {{ historico.paginator.num_pages }}.
                         </span>
                 
                         {% if historico.has_next %}
@@ -130,6 +140,5 @@
             </div>
         </div>
     </div>
-
 </div>
 {% endblock %}

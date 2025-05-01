@@ -121,9 +121,18 @@ class ProfileForm(forms.ModelForm):
 
 # PASSWORD FORM
 class AlterarSenhaForm(forms.Form):
-    senha_atual = forms.CharField(widget=forms.PasswordInput(), label="Senha Atual")
-    nova_senha = forms.CharField(widget=forms.PasswordInput(), label="Nova Senha")
-    confirmar_senha = forms.CharField(widget=forms.PasswordInput(), label="Confirmar Nova Senha")
+    senha_atual  = forms.CharField(
+        label='Senha Atual',
+        widget=forms.PasswordInput(attrs={'class': 'input-field', 'placeholder': 'Senha Atual'})
+    )
+    nova_senha = forms.CharField(
+        label='Nova Senha',
+        widget=forms.PasswordInput(attrs={'class': 'input-field', 'placeholder': 'Nova Senha'})
+    )
+    confirmar_senha = forms.CharField(
+        label='Confirmar Senha',
+        widget=forms.PasswordInput(attrs={'class': 'input-field', 'placeholder': 'Confirmar Senha'})
+    )
 
     def clean(self):
         cleaned_data = super().clean()
@@ -157,11 +166,13 @@ class UsuarioCreateForm(UserCreationForm):
     )
     password1 = forms.CharField(
         label='Senha',
-        widget=forms.PasswordInput(attrs={'class': 'input-field', 'placeholder': 'Senha'})
+        widget=forms.PasswordInput(attrs={'class': 'input-field', 'placeholder': 'Senha'}),
+        required=False  # Torna o campo senha opcional
     )
     password2 = forms.CharField(
         label='Confirmar Senha',
-        widget=forms.PasswordInput(attrs={'class': 'input-field', 'placeholder': 'Confirmar Senha'})
+        widget=forms.PasswordInput(attrs={'class': 'input-field', 'placeholder': 'Confirmar Senha'}),
+        required=False  # Torna o campo confirmação de senha opcional
     )
 
     class Meta:
@@ -176,6 +187,11 @@ class UsuarioCreateForm(UserCreationForm):
         if instance:
             # Se for edição (com instância de usuário), podemos remover o campo 'username'
             del self.fields['username']
+
+        # Se não houver senha preenchida, não validamos
+        if not instance or not instance.password:
+            del self.fields['password1']
+            del self.fields['password2']
 
         
 

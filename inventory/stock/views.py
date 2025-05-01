@@ -71,8 +71,8 @@ def permissao_necessaria(permissao):
     return decorator
 
 # HISTORICO
-def registrar_log(usuario, tipo, acao, descricao):
-    LogDeAcao.objects.create(usuario=usuario, tipo=tipo, acao=acao, descricao=descricao)
+def registrar_log(usuario, tipo, acao, descricao, valor_anterior, valor_novo):
+    LogDeAcao.objects.create(usuario=usuario, tipo=tipo, acao=acao, descricao=descricao, valor_anterior=valor_anterior, valor_novo=valor_novo)
 
 
 # HOME PAGE
@@ -115,13 +115,40 @@ def editar_produto(request, produto_id):
         messages.warning(request, "Você não tem permissão para editar um produto inativo.")
         return redirect('home')
 
+    # Salva os valores antigos antes de instanciar o formulário
+    valores_antigos = {}
+    for campo in produto._meta.get_fields():
+        if not campo.is_relation and campo.name != 'id':  # Ignora o ID e relações
+            valores_antigos[campo.name] = getattr(produto, campo.name)
+
     if request.method == 'POST':
         form = ProdutoForm(request.POST, instance=produto)
+
         if form.is_valid():
+            # Após a validação, capturamos os novos valores do formulário
+            alteracoes = {}
+            for campo in form.changed_data:
+                valor_antigo = valores_antigos.get(campo)
+                valor_novo = form.cleaned_data[campo]
+                alteracoes[campo] = {
+                    'antes': str(valor_antigo),
+                    'depois': str(valor_novo)
+                }
             form.save()
-            messages.success(request, "Produto atualizado com sucesso!")
-            registrar_log(request.user, 'success', "Edição de Produto", f"Produto {produto.item} {produto.marca} foi editado com sucesso.")
+
+            if alteracoes:
+                registrar_log(
+                    request.user,
+                    'warning',
+                    "Edição de Produto",
+                    f"{produto.item} - {produto.marca}",
+                    valor_anterior={k: v['antes'] for k, v in alteracoes.items()},
+                    valor_novo={k: v['depois'] for k, v in alteracoes.items()}
+                )
+
+            messages.success(request, "Produto atualizado com sucesso!", extra_tags='success')
             return redirect('home')
+
     else:
         form = ProdutoForm(instance=produto)
 
@@ -139,9 +166,15 @@ def editar_produto(request, produto_id):
 def desativar_produto(request, produto_id):
     produto = get_object_or_404(Produto, id=produto_id)
 
-    if produto.ativo:  # Verifica se o produto está ativo antes de desativá-lo
+    if produto.ativo:  
         produto.ativo = False
         produto.save()
+        registrar_log(
+            request.user,
+            'danger',
+            "Desativação de Produto",
+            f"{produto.item} - {produto.marca}"
+        )
         messages.success(request, "Produto desativado com sucesso!")
 
     else:
@@ -169,7 +202,12 @@ def cadastrar_produto(request):
 
             produto.save()
             messages.success(request, 'Produto cadastrado com sucesso!', extra_tags='success')
-
+            registrar_log(
+                request.user,
+                'success',
+                "Cadastro de Produto",
+                f"{produto.item} - {produto.marca} | {produto.categoria} | {produto.vendas} - {produto.estoque} | {produto.preco}"
+            )
             return redirect('home')
         else:
             messages.error(request, 'Erro ao cadastrar produto. Verifique os campos.', extra_tags='danger')
@@ -261,8 +299,13 @@ def add_user(request):
         form = UsuarioCreateForm(request.POST)
         if form.is_valid():
             form.save()
+            registrar_log(
+                request.user,
+                'info',
+                "Criação de Usuário",
+                f"{usuarios.username} - {usuarios.first_name} {usuarios.last_name} | {usuarios.cargo}"
+            )
             messages.success(request, 'Usuário criado com sucesso!')
-            novo_usuario = form.save()
             return redirect('users')
     else:
         form = UsuarioCreateForm()
@@ -272,15 +315,50 @@ def add_user(request):
 # EDITAR USUARIO
 def edit_user(request, id):
     usuario = get_object_or_404(CustomUser, id=id)
-    
+
+    valores_antigos = {}
+    for campo in usuario._meta.get_fields():
+        if not campo.is_relation and campo.name != 'id' and campo.name != 'password':  # Ignora o ID e a senha
+            valores_antigos[campo.name] = getattr(usuario, campo.name)
+
     if request.method == 'POST':
         form = UsuarioCreateForm(request.POST, instance=usuario)
         if form.is_valid():
+            alteracoes = {}
+            for campo in form.changed_data:
+                if campo not in ['password1', 'password2']:
+                    valor_antigo = valores_antigos.get(campo)
+                    valor_novo = form.cleaned_data[campo]
+                    alteracoes[campo] = {
+                        'antes': str(valor_antigo),
+                        'depois': str(valor_novo)
+                    }
+
+            if form.cleaned_data['password1']:
+                alteracoes['senha'] = {
+                    'antes': "******",
+                    'depois': "******"
+                }
+
             form.save()
+
+            if alteracoes:
+                registrar_log(
+                    request.user,
+                    'primary',
+                    "Edição de Usuário",
+                    f"Usuário: {usuario.username}",
+                    valor_anterior={k: v['antes'] for k, v in alteracoes.items()},
+                    valor_novo={k: v['depois'] for k, v in alteracoes.items()}
+                )
+
             messages.success(request, "Usuário atualizado com sucesso!")
             return redirect('users')
+        else:
+            messages.error(request, "Houve um erro ao processar a solicitação.", extra_tags='danger')
     else:
-        form = UsuarioCreateForm(instance=usuario)  # Preenche o formulário com os dados do usuário
+        form = UsuarioCreateForm(instance=usuario)
+    
 
     return render(request, 'editUser.html', {'form': form, 'usuario': usuario})
 
@@ -292,6 +370,12 @@ def disable_user(request, id):
     if usuario.is_active:
         usuario.is_active = False
         usuario.save()
+        registrar_log(
+            request.user,
+            'dark',
+            "Desativação de Usuário",
+            f"{usuario.username} - {usuario.first_name} {usuario.last_name} | {usuario.cargo}"
+        )
         messages.add_message(request, messages.ERROR, 'Usuário DESATIVADO com sucesso!', extra_tags='dark')
     else:
         messages.error(request, "O usuário já está desativado.")
@@ -305,6 +389,12 @@ def enable_user(request, id):
     if not usuario.is_active:
         usuario.is_active = True
         usuario.save()
+        registrar_log(
+            request.user,
+            'light',
+            "Ativação de Usuário",
+            f"{usuario.username} - {usuario.first_name} {usuario.last_name} | {usuario.cargo}"
+        )
         messages.add_message(request, messages.SUCCESS, 'Usuário ATIVADO com sucesso!', extra_tags='success')
 
     else:

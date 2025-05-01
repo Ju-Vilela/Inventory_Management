@@ -18,23 +18,15 @@ class Produto(models.Model):
 # HISTORICO
 class LogDeAcao(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    tipo = models.CharField(max_length=20, default='info')  # <-- novo campo!
+    tipo = models.CharField(max_length=20, default='light')
     acao = models.CharField(max_length=50)
     descricao = models.TextField()
     data = models.DateTimeField(auto_now_add=True)
+    valor_anterior = models.TextField(null=True, blank=True)
+    valor_novo = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.usuario.username} - {self.acao} - {self.data}"
-
-    @property
-    def alert_class(self):
-        ALERT_CLASSES = {
-            'success': 'alert-success',
-            'info': 'alert-primary',
-            'warning': 'alert-warning',
-            'danger': 'alert-danger',
-        }
-        return ALERT_CLASSES.get(self.tipo.lower(), 'alert-primary')
 
 
 # CUSTOMUSER

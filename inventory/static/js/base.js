@@ -20,11 +20,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Script para esconder o alerta após 5 segundos
 document.addEventListener('DOMContentLoaded', function () {
-    const alert = document.querySelector('.alert.alert-dismissible');
+    const alert = document.getElementById('#alert-container');
     if (alert) {
         setTimeout(function () {
-            alert.classList.remove('show');
-            alert.classList.add('fade');
-        }, 5000); // 5 segundos
+            if (alert) {
+                alert.classList.remove('show');
+                alert.classList.add('fade');
+                setTimeout(() => alert.remove(), 500); // espera o fade terminar e remove
+            }
+        }, 5000);
     }
 });

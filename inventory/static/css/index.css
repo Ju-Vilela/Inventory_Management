@@ -267,6 +267,11 @@ body.dark .modal-content {
     border: 1px solid #444;
 }
 
+body.dark .input-field {
+    background-color: #2e2e40;
+    color: #f5f5f5;
+    border: 1px solid var(--main-color);
+}
 
 /* 🌞 LIGHT MODE OVERRIDES */
 body.light {
