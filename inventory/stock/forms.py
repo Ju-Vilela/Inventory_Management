@@ -91,6 +91,11 @@ class ProdutoForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+        ativo = cleaned_data.get('ativo')
+
+        if isinstance(ativo, str):
+            cleaned_data['ativo'] = ativo.lower() == 'true'
+        
         categoria = cleaned_data.get('categoria')
         nova_categoria = cleaned_data.get('nova_categoria')
 
@@ -99,6 +104,9 @@ class ProdutoForm(forms.ModelForm):
         
         if categoria and nova_categoria:
             raise forms.ValidationError("Escolha uma categoria existente **ou** digite uma nova, não os dois.")
+        
+        return cleaned_data
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

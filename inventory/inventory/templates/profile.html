@@ -92,7 +92,7 @@
                 <ul class="historico-lista">
                     {% for acao in historico %}
                         <li class="historico-item">
-                            <div class="alert alert-{{ acao.alert_class }} align-items-center" role="alert">                                
+                            <div class="alert alert-{{ acao.tipo }} align-items-center" role="alert">                                
                                 <div class="row">
                                     <div class="col-1 align-self-center text-center">
                                         <div class="bi flex-shrink-0 me-2" aria-label="Info:">
@@ -103,7 +103,7 @@
                                         <strong>{{ acao.usuario.username }}</strong>
                                         <small class="text-muted">em {{ acao.data|date:"d.m.Y H:i" }}</small><br>
                                         <span class="text-capitalize fw-bold">{{ acao.acao }}</span>:
-                                        <span class="fst-italic border-bottom border-{{acao.alert_class}}">{{ acao.descricao }}</span>
+                                        <span class="fst-italic border-bottom border-{{ acao.tipo }}">{{ acao.descricao }}</span>
                                         {% if acao.valor_anterior and acao.valor_novo %}
                                         <br>
                                         <span class="text-muted">antes:</span> {{ acao.valor_anterior }}

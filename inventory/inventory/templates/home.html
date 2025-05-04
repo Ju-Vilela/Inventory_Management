@@ -37,8 +37,9 @@
         <tbody id="produtoTabela">
             {% if produtos %}
             {% for p in produtos %}
-            <tr class="clickable-row {% if not p.ativo %}disabled-row{% endif %}"
-                data-href="{% url 'editProduct' p.id %}" data-validade="{{ p.validade }}">
+            <tr class="clickable-row {% if not p.ativo %}disabled-row{% endif %}{% if not p.ativo and not pode_editar_inativos %} no-click{% endif %}{% if not request.user.is_manager or not request.user.is_admin %} sem_permissao{% endif%}"
+                data-href="{% url 'editProduct' p.id %}" data-validade="{{ p.validade }}"
+            >
                 <td>
                     {% if not p.ativo %}
                     <i class="bi bi-slash-circle-fill text-danger" title="Produto inativo"></i>
@@ -62,5 +63,41 @@
         </tbody>
     </table>
 
-    {% block extra_js %}<script src="{% static 'js/home.js' %}"></script> {% endblock %}
+    {% if show_toast_inativos %}
+    <div id="toastInativo" class="toast-container position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index: 1055;">
+        <div class="toast fade show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
+            <div class="toast-header">
+                <i class="bi bi-slash-circle-fill text-danger"></i>&nbsp;&nbsp;
+                <strong class="me-auto">Produtos Inativos</strong>
+                <small><i class="bi bi-bag-dash"></i>&nbsp;&nbsp;{{ produtos_inativos_count }} item{% if produtos_inativos_count > 1 %}s{% endif %}</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Fechar"></button>
+            </div>
+            <div class="toast-body">
+                Você tem permissão para editar produtos inativos.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/home.js' %}"></script> 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toastInativo = document.querySelector('#toastInativo');
+
+        if (toastInativo && !localStorage.getItem('toastInativoFechado')) {
+            const toastElement = new bootstrap.Toast(toastInativo.querySelector('.toast'), {
+                autohide: false
+            });
+            toastElement.show();
+
+            toastInativo.querySelector('.btn-close').addEventListener('click', () => {
+                localStorage.setItem('toastInativoFechado', 'true');
+            });
+        }
+    });
+</script>
+
 {% endblock %}

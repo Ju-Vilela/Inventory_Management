@@ -64,7 +64,7 @@ def permissao_necessaria(permissao):
     def decorator(view_func):
         def _wrapped_view(request, *args, **kwargs):
             if not tem_permissao_usuario(request.user, permissao):
-                messages.error(request, "Você não tem permissão para acessar esta função.")
+                messages.error(request, "Você não tem permissão para acessar esta função.", extra_tags='warning')
                 return redirect('home')
             return view_func(request, *args, **kwargs)
         return _wrapped_view
@@ -80,10 +80,15 @@ def registrar_log(usuario, tipo, acao, descricao, valor_anterior, valor_novo):
 def home(request):
     produtos = Produto.objects.all()
     historico = LogDeAcao.objects.filter(usuario=request.user).order_by('-data')[:50]
+    produtos_inativos = Produto.objects.filter(ativo=False)
+    produtos_inativos_count = produtos_inativos.count()
     context = {
         'produtos': produtos,
         'historico': historico,
-        'timestamp': datetime.now().timestamp()
+        'timestamp': datetime.now().timestamp(),
+        'pode_editar_inativos': tem_permissao_usuario(request.user, Permissoes.ALTERAR_STATUS),
+        "show_toast_inativos": request.user.is_staff and produtos_inativos_count > 0,
+        'produtos_inativos_count': produtos_inativos_count
     }
     return render(request, 'home.html', context)
 
@@ -108,12 +113,9 @@ def lista_produtos(request):
 
 # EDITAR PRODUTO
 @login_required
+@permissao_necessaria(Permissoes.ALTERAR_STATUS)
 def editar_produto(request, produto_id):
     produto = get_object_or_404(Produto, id=produto_id)
-
-    if not produto.ativo and request.user.cargo != 'gerente':
-        messages.warning(request, "Você não tem permissão para editar um produto inativo.")
-        return redirect('home')
 
     # Salva os valores antigos antes de instanciar o formulário
     valores_antigos = {}
@@ -125,6 +127,28 @@ def editar_produto(request, produto_id):
         form = ProdutoForm(request.POST, instance=produto)
 
         if form.is_valid():
+            novo_status = form.cleaned_data.get('ativo')
+    
+            if form.changed_data and 'ativo' in form.changed_data:
+                # Se o status foi alterado, registramos a mudança:
+                form.save()
+                registrar_log(
+                    request.user,
+                    'danger' if not novo_status else 'success',
+                    "Alteração de Status",
+                    f"{produto.item} - {produto.marca}",
+                    valor_anterior= {'Status': v for v in valores_antigos.values()},
+                    valor_novo={'Status': str(novo_status)}
+                )
+                if not novo_status:
+                    msg = "Produto inativado com sucesso!"  
+                    extra_tags='dark'
+                else:
+                    msg = "Produto reativado com sucesso!"
+                    extra_tags='success'
+                messages.success(request, msg, extra_tags)
+                return redirect('home')
+            
             # Após a validação, capturamos os novos valores do formulário
             alteracoes = {}
             for campo in form.changed_data:
@@ -250,7 +274,7 @@ def perfil(request):
                 update_session_auth_hash(request, user)
                 messages.success(request, 'Senha alterada com sucesso!')
 
-        return redirect('perfil')
+        return redirect('profile')
 
     else:
         profile_form = ProfileForm(instance=user)
