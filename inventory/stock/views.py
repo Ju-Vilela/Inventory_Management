@@ -71,8 +71,15 @@ def permissao_necessaria(permissao):
     return decorator
 
 # HISTORICO
-def registrar_log(usuario, tipo, acao, descricao, valor_anterior, valor_novo):
-    LogDeAcao.objects.create(usuario=usuario, tipo=tipo, acao=acao, descricao=descricao, valor_anterior=valor_anterior, valor_novo=valor_novo)
+def registrar_log(usuario, tipo, acao, descricao, valor_anterior=None, valor_novo=None):
+    LogDeAcao.objects.create(
+        usuario=usuario,
+        tipo=tipo,
+        acao=acao,
+        descricao=descricao,
+        valor_anterior=valor_anterior,
+        valor_novo=valor_novo
+    )
 
 
 # HOME PAGE
@@ -214,6 +221,7 @@ def cadastrar_produto(request):
         form = ProdutoForm(request.POST)
         if form.is_valid():
             produto = form.save(commit=False)
+            produto.ativo = True
 
             nova_categoria = form.cleaned_data.get('nova_categoria')
             categoria = form.cleaned_data.get('categoria')
@@ -234,7 +242,13 @@ def cadastrar_produto(request):
             )
             return redirect('home')
         else:
-            messages.error(request, 'Erro ao cadastrar produto. Verifique os campos.', extra_tags='danger')
+            if form.errors:
+                for field in form:
+                    for error in field.errors:
+                        messages.error(request, f"Erro ao cadastrar | {field.label} | {error}", extra_tags='danger')
+                for error in form.non_field_errors():
+                    messages.error(request, error, extra_tags='danger')
+                
     else:
         form = ProdutoForm()
 

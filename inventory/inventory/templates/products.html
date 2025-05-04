@@ -78,59 +78,63 @@
         </button>
     </div>
 </form>
-
+{% endblock %}
 
 {% block extra_js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.8/inputmask.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        Inputmask({
-            "alias": "currency",
-            "prefix": "R$ ",
-            "groupSeparator": ".",
-            "radixPoint": ",",
-            "digits": 2,
-            "autoUnmask": true
-        }).mask(document.querySelector('[name="preco"]'));
-    });
+    $(document).ready(function () {
+        const precoInput = $('input[name$="preco"]');
+        if (precoInput.length) {
+            precoInput.inputmask("currency", {
+                prefix: "R$ ",
+                groupSeparator: ".",
+                radixPoint: ",",
+                digits: 2,
+                autoUnmask: true
+            });
+        } else {
+            console.warn("Campo de preço não encontrado!");
+        }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        const novaCategoriaDiv = document.querySelector('[name="nova_categoria"]').closest('div');
-        const categoriaSelect = document.querySelector('[name="categoria"]');
+        const categoriaSelect = $('[name="categoria"]');
+        const novaCategoriaDiv = $('[name="nova_categoria"]').closest('div');
 
         function toggleNovaCategoria() {
-            if (categoriaSelect.value === '') {
-                novaCategoriaDiv.style.display = 'block';  // Mostra o campo de nova categoria
+            if (categoriaSelect.val() === '') {
+                novaCategoriaDiv.show();
             } else {
-                novaCategoriaDiv.style.display = 'none';  // Esconde o campo de nova categoria
-                document.querySelector('[name="nova_categoria"]').value = '';  // Limpa o valor
+                novaCategoriaDiv.hide();
+                $('[name="nova_categoria"]').val('');
             }
         }
 
-        categoriaSelect.addEventListener('change', toggleNovaCategoria);
-        toggleNovaCategoria();  // Função já rodando para verificar o estado inicial
+        categoriaSelect.on('change', toggleNovaCategoria);
+        toggleNovaCategoria();
     });
 
-    const statusBtn = document.getElementById('statusBtn');
+    document.addEventListener('DOMContentLoaded', function () {
+        const statusBtn = document.getElementById('statusBtn');
         const ativoInput = document.getElementById('ativoInput');
 
-        statusBtn.addEventListener('click', () => {
-            const isAtivo = ativoInput.value === 'true';
-            ativoInput.value = (!isAtivo).toString();
+        if (statusBtn && ativoInput) {
+            statusBtn.addEventListener('click', () => {
+                const isAtivo = ativoInput.value === 'true';
+                ativoInput.value = (!isAtivo).toString();
 
-            // Mudar ícone, classe e texto do botão
-            if (isAtivo) {
-                statusBtn.classList.remove('btn-success');
-                statusBtn.classList.add('btn-danger');
-                statusBtn.innerHTML = '<i class="bi bi-x-octagon-fill me-2"></i> Inativo';
-            } else {
-                statusBtn.classList.remove('btn-danger');
-                statusBtn.classList.add('btn-success');
-                statusBtn.innerHTML = '<i class="bi bi-patch-check-fill me-2"></i> Ativo';
-            }
-        });
+                if (isAtivo) {
+                    statusBtn.classList.remove('btn-success');
+                    statusBtn.classList.add('btn-danger');
+                    statusBtn.innerHTML = '<i class="bi bi-x-octagon-fill me-2"></i> Inativo';
+                } else {
+                    statusBtn.classList.remove('btn-danger');
+                    statusBtn.classList.add('btn-success');
+                    statusBtn.innerHTML = '<i class="bi bi-patch-check-fill me-2"></i> Ativo';
+                }
+            });
+        }
+    });
+</script>
 
 </script>
-{% endblock %}
+
 {% endblock %}

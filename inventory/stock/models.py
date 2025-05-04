@@ -9,7 +9,7 @@ class Produto(models.Model):
     validade = models.DateField(null=True, blank=True)
     vendas = models.IntegerField(null=True, blank=True, default=0)
     estoque = models.IntegerField(null=True, blank=True, default=0)
-    preco = models.DecimalField(max_digits=10, decimal_places=2)
+    preco = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     ativo = models.BooleanField(default=True)
 
     def __str__(self):

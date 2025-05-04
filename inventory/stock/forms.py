@@ -11,8 +11,8 @@ class CustomLoginForm(AuthenticationForm):
         widget=forms.PasswordInput(attrs={'class': 'input-field', 'placeholder': 'Password'})
     )
 
-from django import forms
 from .models import Produto
+from decimal import Decimal, InvalidOperation
 
 # FORMULÁRIO DE CADASTRO DE PRODUTO
 class ProdutoForm(forms.ModelForm):
@@ -72,13 +72,11 @@ class ProdutoForm(forms.ModelForm):
         })
     )
 
-    preco = forms.DecimalField(
+    preco = forms.CharField(
         required=False,
-        max_digits=10,
-        decimal_places=2,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'R$ 00,00'
+            'placeholder': 'Preço'
         })
     )
 
@@ -106,6 +104,17 @@ class ProdutoForm(forms.ModelForm):
             raise forms.ValidationError("Escolha uma categoria existente **ou** digite uma nova, não os dois.")
         
         return cleaned_data
+
+    def clean_preco(self):
+        preco = self.cleaned_data.get('preco')
+        if preco:
+            if isinstance(preco, str):
+                preco = preco.replace("R$", "").replace(".", "").replace(",", ".").strip()
+            try:
+                return Decimal(preco)
+            except (ValueError, TypeError, InvalidOperation):
+                raise forms.ValidationError("Preço inválido.")
+        return Decimal('0.00')  # se vazio, retorna 0.00
 
 
     def __init__(self, *args, **kwargs):
