@@ -37,9 +37,11 @@
         <tbody id="produtoTabela">
             {% if produtos %}
             {% for p in produtos %}
-            <tr class="clickable-row {% if not p.ativo %}disabled-row{% endif %}{% if not p.ativo and not pode_editar_inativos %} no-click{% endif %}{% if not request.user.is_manager or not request.user.is_admin %} sem_permissao{% endif%}"
-                data-href="{% url 'editProduct' p.id %}" data-validade="{{ p.validade }}"
-            >
+            <tr class="clickable-row
+                {% if not p.ativo %}disabled-row{% endif %}
+                {% if not p.ativo and not pode_editar_inativos %} no-click{% endif %}
+                {% if not request.user.is_manager and not request.user.is_admin %} sem_permissao{% endif %}"
+                data-href="{% url 'editProduct' p.id %}" data-validade="{{ p.validade }}">
                 <td>
                     {% if not p.ativo %}
                     <i class="bi bi-slash-circle-fill text-danger" title="Produto inativo"></i>
