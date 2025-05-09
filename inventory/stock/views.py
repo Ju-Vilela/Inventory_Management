@@ -52,7 +52,7 @@ permissoes_por_cargo = {
         Permissoes.HISTORICO,
         Permissoes.ALERTAS,
     ],
-    'funcionario': [
+    'vendedor': [
         Permissoes.EDITAR,
         Permissoes.ATUALIZAR_ESTOQUE,
         Permissoes.HISTORICO,

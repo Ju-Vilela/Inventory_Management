@@ -35,19 +35,19 @@ from django.db import models
 
 class CustomUser(AbstractUser):
     ADMIN = 'admin'
-    FUNCIONARIO = 'funcionario'
+    VENDEDOR = 'vendedor'
     GERENTE = 'gerente'
 
     CARGOS = [
         (ADMIN, 'Admin'),
-        (FUNCIONARIO, 'Funcionário'),
+        (VENDEDOR, 'vendedor'),
         (GERENTE, 'Gerente'),
     ]
 
     cargo = models.CharField(
         max_length=50,
         choices=CARGOS,
-        default=FUNCIONARIO,
+        default=VENDEDOR,
     )
 
     @property
