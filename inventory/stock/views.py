@@ -238,7 +238,7 @@ def cadastrar_produto(request):
                 request.user,
                 'success',
                 "Cadastro de Produto",
-                f"{produto.item} - {produto.marca} | {produto.categoria} | {produto.vendas} - {produto.estoque} | {produto.preco}"
+                f"{produto.item} - {produto.marca} | {produto.categoria} | V: {produto.vendas} - E: {produto.estoque} | R$ {produto.preco}"
             )
             return redirect('home')
         else:
