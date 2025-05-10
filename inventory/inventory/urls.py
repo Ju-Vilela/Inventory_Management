@@ -16,7 +16,8 @@ urlpatterns = [
     path('usuarios/edit/<int:id>/', views.edit_user, name='editUser'),
     path('usuarios/disable/<int:id>/', views.disable_user, name='disableUser'),
     path('usuarios/ativar/<int:id>/', views.enable_user, name='enableUser'),
-    path('cadastrar/', views.cadastrar_produto, name='products'),
+    path('cadastrar-produto/', views.cadastrar_produto, name='products'),
+    path('cadastrar-entrada/', views.registrar_entrada, name='entradas'),
     path('', views.home, name='home'),
 ]
 

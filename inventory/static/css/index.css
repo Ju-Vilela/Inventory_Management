@@ -144,6 +144,24 @@ a:hover{ color: initial; }
     opacity: 1;
 }
 
+/* TOOLTIPS */
+i.help-tooltip {
+    color: var(--main-color);
+    cursor:help;
+}
+.tooltip-inner {
+    background-color: #3061abf8;
+    max-width: 500px !important;
+    text-align: justify;
+}
+.tooltip-arrow::before {
+    border-color: transparent !important;
+}
+
+
+
+
+
 /* 🌙 DARK MODE OVERRIDES */
 
 body.dark {
@@ -272,6 +290,11 @@ body.dark .input-field {
     border: 1px solid var(--main-color);
 }
 
+body.dark .input-group-text {
+    background-color: #3b3b51;
+    color: #f5f5f5;
+}
+
 /* 🌞 LIGHT MODE OVERRIDES */
 body.light {
     background-color: #f9fafb;
@@ -312,4 +335,9 @@ body.light .btn-icon {
 
 body.light .product-table tbody tr:hover {
     background-color: #e5e7eb;
+}
+
+body.light .input-group-text {
+    background-color: #cfd1d4;
+    color: #1f2937;
 }

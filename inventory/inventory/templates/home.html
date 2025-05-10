@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Produtos{% endblock %}
+{% block title %}Home{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/home.css' %}?v={{ timestamp }}">
 {% endblock %}
@@ -18,7 +18,7 @@
             </div>
             <a href="{% url 'products' %}">
                 <button class="btn btn-blue">
-                    <i class="bi bi-cart-plus"></i>&nbsp;&nbsp; Add Produto
+                    <i class="bi bi-basket-fill"></i>&nbsp;&nbsp; Add Produto
                 </button>
             </a>
         </div>
@@ -28,12 +28,12 @@
         <thead>
             <tr>
                 <th data-column="item">Items</th>
-                <th data-column="categoria">Categoria</th>
+                <th class="text-center" data-column="categoria">Categoria</th>
                 <th data-column="marca">Marca</th>
                 <th data-column="validade">Validade</th>
                 <th data-column="vendas">Vendas</th>
                 <th data-column="estoque">Estoque</th>
-                <th data-column="preco">Preço</th>
+                <th class="text-center" data-column="preco">Preço</th>
             </tr>
         </thead>
         <tbody id="produtoTabela">
@@ -51,12 +51,12 @@
                     &nbsp;&nbsp;
                     {{ p.item }}
                 </td>
-                <td>{{ p.categoria }}</td>
+                <td class="text-center">{{ p.categoria }}</td>
                 <td>{{ p.marca }}</td>
-                <td>{{ p.validade|date:"d/m/Y" }}</td>
-                <td>{{ p.vendas }}</td>
-                <td>{{ p.estoque }}</td>
-                <td>R$ {{ p.preco|floatformat:2 }}</td>
+                <td>validade</td>
+                <td>vendas</td>
+                <td class="text-center">{{ p.estoque }}</td>
+                <td class="text-end">R$ {{ p.preco|floatformat:2 }}</td>
             </tr>
             {% endfor %}
             {% else %}

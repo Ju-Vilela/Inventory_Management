@@ -27,40 +27,42 @@
 
     <div class="row g-3 mb-3">
         <div class="col-md-6">
-            <label class="form-label">{{ form.categoria.label }}</label>
+            <label class="form-label">
+                {{ form.categoria.label }}
+                <i class="bi bi-question-circle-fill help-tooltip" data-bs-toggle="tooltip" data-bs-placement="right"
+                data-bs-title="Para adicionar uma nova categoria deixe a seleção em branco."></i>
+            </label>
             {{ form.categoria|add_class:"form-select" }}
         </div>
         <div class="col-md-6">
-            <label class="form-label">{{ form.nova_categoria.label }}</label>
+            <label class="form-label">
+                {{ form.nova_categoria.label }}
+            </label>
             {{ form.nova_categoria|add_class:"form-control" }}
         </div>
     </div>
 
     <div class="row g-3 mb-3">
-        <div class="col-md-6">
-            <label class="form-label">{{ form.validade.label }}</label>
-            {{ form.validade|add_class:"form-control" }}
+        <div class="col-md-2">
+            <label class="form-label">{{ form.estoque_minimo.label }}</label>
+            {{ form.estoque_minimo|add_class:"form-control" }}
         </div>
-        <div class="col-md-3">
-            <label class="form-label">{{ form.vendas.label }}</label>
-            {{ form.vendas|add_class:"form-control" }}
+        <div class="col-md-2">
+            <label for="{{ form.preco.id_for_label }}" class="form-label">{{ form.preco.label }}</label>
+            <div class="input-group">
+                <span class="input-group-text">R$</span>
+                {{ form.preco }}
+            </div>
         </div>
-        <div class="col-md-3">
-            <label class="form-label">{{ form.estoque.label }}</label>
-            {{ form.estoque|add_class:"form-control" }}
-        </div>
-    </div>
-
-    <div class="row g-3 mb-4">
-        <div class="col-md-6">
-            <label class="form-label">{{ form.preco.label }}</label>
-            {{ form.preco|add_class:"form-control" }}
+        <div class="col-md-2">
+            <label class="form-label">{{ form.unidade_medida.label }}</label>
+            {{ form.unidade_medida|add_class:"form-select" }}
         </div>
 
         {% if editando %}
-        <div class="col-md-6 d-flex flex-column">
+        <div class="col-md-3 d-flex flex-column">
             <label class="form-label mb-2">Status</label>
-            <button type="button" id="statusBtn" class="btn {% if form.instance.ativo %}btn-success{% else %}btn-danger{% endif %}" style="width: 50%;">
+            <button type="button" id="statusBtn" class="btn {% if form.instance.ativo %}btn-success{% else %}btn-danger{% endif %}">
                 {% if form.instance.ativo %}
                 <i class="bi bi-patch-check-fill me-2"></i> Ativo
                 {% else %}
@@ -72,7 +74,8 @@
         {% endif %}
     </div>
 
-    <div class="text-end">
+    <div class="text-start d-flex justify-content-between">
+        <a href="{% url 'home' %}" class="btn btn-secondary">Cancelar</a>
         <button type="submit" class="btn btn-blue">
             {% if editando %}Salvar Alterações{% else %}Cadastrar Produto{% endif %}
         </button>
@@ -83,6 +86,9 @@
 {% block extra_js %}
 <script>
     $(document).ready(function () {
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+        
         const precoInput = $('input[name$="preco"]');
         if (precoInput.length) {
             precoInput.inputmask("currency", {
@@ -90,7 +96,8 @@
                 groupSeparator: ".",
                 radixPoint: ",",
                 digits: 2,
-                autoUnmask: true
+                autoUnmask: true,
+                removeMaskOnSubmit: true
             });
         } else {
             console.warn("Campo de preço não encontrado!");
@@ -133,7 +140,6 @@
             });
         }
     });
-</script>
 
 </script>
 

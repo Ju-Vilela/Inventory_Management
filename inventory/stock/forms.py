@@ -1,6 +1,12 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from .models import Produto, CustomUser
+from .models import EntradaEstoque, Produto, CustomUser
+from decimal import Decimal
+from django.core.exceptions import ValidationError
+from djmoney.forms.fields import MoneyField
+from decimal import Decimal, InvalidOperation
+from django.core.exceptions import ValidationError
+import re
 
 # LOGIN FORM
 class CustomLoginForm(AuthenticationForm):
@@ -11,13 +17,8 @@ class CustomLoginForm(AuthenticationForm):
         widget=forms.PasswordInput(attrs={'class': 'input-field', 'placeholder': 'Password'})
     )
 
-from .models import Produto
-from decimal import Decimal, InvalidOperation
-
 # FORMULÁRIO DE CADASTRO DE PRODUTO
 class ProdutoForm(forms.ModelForm):
-    NOVA_CATEGORIA_PLACEHOLDER = "Nova categoria (opcional)"
-
     item = forms.CharField(
         required=False,
         widget=forms.TextInput(attrs={
@@ -36,7 +37,7 @@ class ProdutoForm(forms.ModelForm):
         required=False,
         widget=forms.TextInput(attrs={
             'class': 'form-control mt-2',
-            'placeholder': NOVA_CATEGORIA_PLACEHOLDER
+            'placeholder': "Nova categoria (opcional)"
         })
     )
 
@@ -47,42 +48,41 @@ class ProdutoForm(forms.ModelForm):
             'placeholder': 'Marca'
         })
     )
-
-    validade = forms.DateField(
+ 
+    estoque_minimo = forms.IntegerField(
         required=False,
-        widget=forms.DateInput(attrs={
-            'type': 'date',
-            'class': 'form-control'
-        })
+        min_value=0,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Estoque Mínimo'
+        }),
+        label="Estoque Mínimo"
     )
 
-    vendas = forms.IntegerField(
+    preco = forms.DecimalField(
         required=False,
         widget=forms.NumberInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Vendas'
+            'placeholder': 'Preço',
+            'step': '0.01'
         })
     )
 
-    estoque = forms.IntegerField(
-        required=False,
-        widget=forms.NumberInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Estoque'
-        })
+    unidade_medida = forms.ChoiceField(
+        label='Unidade de Medida',
+        choices=Produto.UNIDADES,
+        widget=forms.Select(attrs={
+            'class': 'form-select',
+            'placeholder': 'Unidade de Medida'
+        }),
+        required=True
     )
 
-    preco = forms.CharField(
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Preço'
-        })
-    )
 
     class Meta:
         model = Produto
         fields = '__all__'
+        exclude = ['sku']
         widgets = {
             'ativo': forms.HiddenInput(),
         }
@@ -107,20 +107,110 @@ class ProdutoForm(forms.ModelForm):
 
     def clean_preco(self):
         preco = self.cleaned_data.get('preco')
-        if preco:
-            if isinstance(preco, str):
-                preco = preco.replace("R$", "").replace(".", "").replace(",", ".").strip()
-            try:
-                return Decimal(preco)
-            except (ValueError, TypeError, InvalidOperation):
-                raise forms.ValidationError("Preço inválido.")
-        return Decimal('0.00')  # se vazio, retorna 0.00
 
+        if preco is None:
+            return Decimal('0.00')
+
+        if isinstance(preco, str):
+            # Remove tudo que não for número ou vírgula/ponto
+            preco = re.sub(r'[^\d,.-]', '', preco)
+            preco = preco.replace('.', '').replace(',', '.')
+
+        try:
+            return Decimal(preco)
+        except (ValueError, TypeError, InvalidOperation):
+            raise forms.ValidationError("Preço inválido.")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         categorias = Produto.objects.values_list('categoria', flat=True).distinct()
         self.fields['categoria'].choices = [('', 'Selecione uma categoria')] + [(c, c) for c in categorias]
+
+        if not self.is_bound and self.instance and self.instance.pk:
+            preco = self.instance.preco
+            if preco:
+                self.fields['preco'].initial = f"{preco:.2f}".replace('.', ',')
+
+#ENTRADAS
+TIPOS_ENTRADA = [
+    ('compra', 'Compra'),
+    ('ajuste', 'Ajuste'),
+    ('devolucao', 'Devolução de cliente'),
+    ('transferencia', 'Transferência'),
+    ('correcao', 'Correção de estoque'),
+    ('outro', 'Outro'),
+]
+class EntradaEstoqueForm(forms.ModelForm):
+    produto = forms.ModelChoiceField(
+        queryset=Produto.objects.filter(ativo=True),
+        empty_label="Selecione um produto",
+        widget=forms.Select(attrs={
+            'class': 'form-select',
+        }),
+        required=True
+    )
+
+    tipo = forms.ChoiceField(
+        choices=TIPOS_ENTRADA,
+        initial='Compra',
+        widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_tipo'})
+    )
+
+    tipo_personalizado = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control mt-2',
+            'placeholder': 'Especifique o tipo'
+        })
+    )
+
+    validade = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'form-control',
+            'placeholder': 'Validade'
+        }),
+        label='Data de validade'
+    )
+
+    preco_unitario = forms.DecimalField(
+        required=False,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': '00,00',
+            'step': '0.01'
+        })
+    )
+
+    class Meta:
+        model = EntradaEstoque
+        fields = ['produto', 'quantidade', 'tipo', 'validade', 'tipo_personalizado', 'preco_unitario', 'observacoes']
+        widgets = {
+            'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Quantidade'}),
+            'observacoes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Observações'}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        tipo = cleaned_data.get('tipo')
+        tipo_personalizado = cleaned_data.get('tipo_personalizado')
+
+        if tipo == 'outro' and not tipo_personalizado:
+            self.add_error('tipo_personalizado', 'Por favor, especifique o tipo.')
+
+        return cleaned_data     
+
+    def clean_preco_unitario(self):
+        preco_unitario = self.cleaned_data.get('preco_unitario')
+        if preco_unitario:
+            if isinstance(preco_unitario, str):
+                preco_unitario = preco_unitario.replace("R$", "").replace(".", "").replace(",", ".").strip()
+            try:
+                return Decimal(preco_unitario)
+            except (ValueError, TypeError, InvalidOperation):
+                raise forms.ValidationError("Preço inválido.")
+        return Decimal('0.00')  # se vazio, retorna 0.00
 
 
 # PERFIL FORM
@@ -133,7 +223,7 @@ class ProfileForm(forms.ModelForm):
             'first_name': 'Nome',
             'last_name': 'Sobrenome',
             'email': 'Email',
-            'cargo': 'Cargo',
+            'cargo': 'Cargo', #  Tirar se não tiver permissão ADMIN
         }
 
 # PASSWORD FORM
@@ -211,4 +301,13 @@ class UsuarioCreateForm(UserCreationForm):
             del self.fields['password2']
 
         
-
+# FORM MONEY
+class CustomMoneyField(MoneyField):
+    def to_python(self, value):
+        if isinstance(value, str):
+            value = value.replace('R$', '').replace('.', '').replace(',', '.').strip()
+        try:
+            value = Decimal(value)
+        except (InvalidOperation, ValueError, TypeError):
+            raise ValidationError('Preço inválido.')
+        return super().to_python(value)

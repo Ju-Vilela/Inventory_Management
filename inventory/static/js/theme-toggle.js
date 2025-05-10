@@ -9,13 +9,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (savedTheme === "dark") {
         body.classList.add("dark");
         body.classList.remove("light");
-        icon?.classList.remove("fa-sun");
-        icon?.classList.add("fa-moon");
+        icon?.classList.remove("bi-brightness-high-fill");
+        icon?.classList.add("bi-moon-stars");
     } else {
         body.classList.add("light");
         body.classList.remove("dark");
-        icon?.classList.remove("fa-moon");
-        icon?.classList.add("fa-sun");
+        icon?.classList.remove("bi-moon-stars");
+        icon?.classList.add("bi-brightness-high-fill");
     }
 
     // 🌗 Alternar tema
@@ -25,12 +25,12 @@ document.addEventListener("DOMContentLoaded", () => {
             body.classList.toggle("light");
 
             if (body.classList.contains("dark")) {
-                icon?.classList.remove("fa-sun");
-                icon?.classList.add("fa-moon");
+                icon?.classList.remove("bi-brightness-high-fill");
+                icon?.classList.add("bi-moon-stars");
                 localStorage.setItem("theme", "dark");
             } else {
-                icon?.classList.remove("fa-moon");
-                icon?.classList.add("fa-sun");
+                icon?.classList.remove("bi-moon-stars");
+                icon?.classList.add("bi-brightness-high-fill");
                 localStorage.setItem("theme", "light");
             }
         });

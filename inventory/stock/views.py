@@ -6,9 +6,12 @@ from django.contrib import messages
 from datetime import datetime
 from django.utils.timezone import localtime
 from .models import Produto, CustomUser, LogDeAcao
-from .forms import ProdutoForm, ProfileForm, UsuarioCreateForm, AlterarSenhaForm
+from .forms import ProdutoForm, ProfileForm, UsuarioCreateForm, AlterarSenhaForm, EntradaEstoqueForm
 from django.contrib.auth import update_session_auth_hash
 from django.core.paginator import Paginator
+from django.utils import timezone
+from django.core.serializers.json import DjangoJSONEncoder
+import json
 
 # PERMISSÕES
 def tem_permissao_usuario(usuario, permissao):
@@ -123,7 +126,6 @@ def lista_produtos(request):
 @permissao_necessaria(Permissoes.ALTERAR_STATUS)
 def editar_produto(request, produto_id):
     produto = get_object_or_404(Produto, id=produto_id)
-
     # Salva os valores antigos antes de instanciar o formulário
     valores_antigos = {}
     for campo in produto._meta.get_fields():
@@ -159,6 +161,9 @@ def editar_produto(request, produto_id):
             # Após a validação, capturamos os novos valores do formulário
             alteracoes = {}
             for campo in form.changed_data:
+                for campo in form.changed_data:
+                    if campo == 'sku':
+                        continue
                 valor_antigo = valores_antigos.get(campo)
                 valor_novo = form.cleaned_data[campo]
                 alteracoes[campo] = {
@@ -229,7 +234,6 @@ def cadastrar_produto(request):
 
             produto.marca = produto.marca or "sem marca"
             produto.vendas = produto.vendas or 0
-            produto.estoque = produto.estoque or 0
             produto.preco = produto.preco or 0.00
 
             produto.save()
@@ -238,7 +242,7 @@ def cadastrar_produto(request):
                 request.user,
                 'success',
                 "Cadastro de Produto",
-                f"{produto.item} - {produto.marca} | {produto.categoria} | V: {produto.vendas} - E: {produto.estoque} | R$ {produto.preco}"
+                f"{produto.item} - {produto.marca} | {produto.categoria} | V: {produto.vendas} | R$ {produto.preco}"
             )
             return redirect('home')
         else:
@@ -253,6 +257,41 @@ def cadastrar_produto(request):
         form = ProdutoForm()
 
     return render(request, 'products.html', {'form': form})
+
+# ENTRADAS
+@login_required
+@permissao_necessaria(Permissoes.ATUALIZAR_ESTOQUE)
+def registrar_entrada(request):
+    if request.method == 'POST':
+        form = EntradaEstoqueForm(request.POST)
+        print("POST recebido:", request.POST)
+        if form.is_valid():
+            entrada = form.save(commit=False)
+            tipo_personalizado = form.cleaned_data.get('tipo_personalizado')
+
+            if entrada.tipo == "Outro" and tipo_personalizado:
+                entrada.tipo = tipo_personalizado
+
+            entrada.usuario = request.user
+            entrada.save()
+            messages.success(request, 'Entrada registrada com sucesso!', extra_tags='success')
+            return redirect('home')
+        else:
+            for field in form:
+                for error in field.errors:
+                    messages.error(request, f"Erro ao Registrar Entrada | {field.label} | {error}", extra_tags='danger')
+            for error in form.non_field_errors():
+                messages.error(request, error, extra_tags='danger')
+    else:
+        form = EntradaEstoqueForm()
+    
+    produtos = Produto.objects.filter(ativo=True).values('id', 'sku', 'estoque', 'unidade_medida')
+
+    return render(request, 'movimentacao/entradas.html', {
+        'form': form,
+        'produtos_json': json.dumps(list(produtos), cls=DjangoJSONEncoder)
+    })
+
 
 
 # PERFIL PAGE
