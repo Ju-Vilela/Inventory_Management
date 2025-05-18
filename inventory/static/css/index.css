@@ -158,8 +158,22 @@ i.help-tooltip {
     border-color: transparent !important;
 }
 
+/* SELECT2 */
+.select2-container--default .select2-selection--single {
+    height: 35.5px !important;
+}
 
+.select2-container--default .select2-results>.select2-results__options {
+    scrollbar-width: thin;
+}
 
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 35.5px !important;
+}
+
+.select2-dropdown {
+    padding: 5px;
+}
 
 
 /* 🌙 DARK MODE OVERRIDES */
@@ -295,6 +309,36 @@ body.dark .input-group-text {
     color: #f5f5f5;
 }
 
+/* Select2 */ 
+body.dark .select2-container--default .select2-selection--single {
+    background-color: #2e2e40;
+    color: #f1f1f1;
+    border: 1px solid #444;
+}
+
+body.dark .select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #f1f1f1;
+}
+
+body.dark .select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: #f1f1f1 transparent transparent transparent;
+}
+
+body.dark .select2-container--default .select2-results__option--selected {
+    background-color: #303d91;
+}
+
+body.dark .select2-dropdown {
+    background-color: #2e2e40;
+    color: #f1f1f1;
+    border: 1px solid #444;
+}
+
+body.dark .select2-results__option--highlighted {
+    background-color: #3b3b51 !important;
+    color: #fff;
+}
+
 /* 🌞 LIGHT MODE OVERRIDES */
 body.light {
     background-color: #f9fafb;
@@ -339,5 +383,35 @@ body.light .product-table tbody tr:hover {
 
 body.light .input-group-text {
     background-color: #cfd1d4;
+    color: #1f2937;
+}
+
+/* Select2 */ 
+body.light .select2-container--default .select2-selection--single {
+    background-color: #ffffff;
+    color: #1f2937;
+    border: 1px solid #ccc;
+}
+
+body.light .select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #1f2937;
+}
+
+body.light .select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: #1f2937 transparent transparent transparent;
+}
+
+body.light .select2-container--default .select2-results__option--selected {
+    background-color: #3061ab;
+}
+
+body.light .select2-dropdown {
+    background-color: #ffffff;
+    color: #1f2937;
+    border: 1px solid #ccc;
+}
+
+body.light .select2-results__option--highlighted {
+    background-color: #e5e7eb !important;
     color: #1f2937;
 }

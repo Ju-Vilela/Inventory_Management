@@ -1,0 +1,23 @@
+body.dark #tabela-saida {
+    color: #f0f0f0;
+}
+
+body.light #tabela-saida {
+    color: #333;
+}
+
+#tabela-saida {
+    border: 1px solid #ccc !important;
+}
+
+#tabela-saida tfoot td,
+#tabela-saida tfoot th {
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+}
+
+#tabela-saida tfoot {
+    border: 1px solid #ccc !important;
+    background-color: #182442;
+}

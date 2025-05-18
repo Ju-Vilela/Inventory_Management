@@ -1,9 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from .models import EntradaEstoque, Produto, CustomUser
+from .models import EntradaEstoque, SaidaEstoque, Produto, CustomUser
 from decimal import Decimal
 from django.core.exceptions import ValidationError
-from djmoney.forms.fields import MoneyField
 from decimal import Decimal, InvalidOperation
 from django.core.exceptions import ValidationError
 import re
@@ -20,7 +19,7 @@ class CustomLoginForm(AuthenticationForm):
 # FORMULÁRIO DE CADASTRO DE PRODUTO
 class ProdutoForm(forms.ModelForm):
     item = forms.CharField(
-        required=False,
+        required=True,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': 'Nome do Item'
@@ -131,90 +130,146 @@ class ProdutoForm(forms.ModelForm):
             if preco:
                 self.fields['preco'].initial = f"{preco:.2f}".replace('.', ',')
 
-#ENTRADAS
-TIPOS_ENTRADA = [
-    ('compra', 'Compra'),
-    ('ajuste', 'Ajuste'),
-    ('devolucao', 'Devolução de cliente'),
-    ('transferencia', 'Transferência'),
-    ('correcao', 'Correção de estoque'),
-    ('outro', 'Outro'),
-]
+# MOVIMENTAÇÃO DE ESTOQUE
 class EntradaEstoqueForm(forms.ModelForm):
     produto = forms.ModelChoiceField(
-        queryset=Produto.objects.filter(ativo=True),
+        queryset=Produto.objects.filter(ativo=True).order_by('item'),
         empty_label="Selecione um produto",
-        widget=forms.Select(attrs={
-            'class': 'form-select',
-        }),
-        required=True
+        widget=forms.Select(attrs={'class': 'form-select2 form-select'}),
     )
 
     tipo = forms.ChoiceField(
-        choices=TIPOS_ENTRADA,
-        initial='Compra',
-        widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_tipo'})
+        choices=EntradaEstoque.TIPOS_ENTRADA,
+        widget=forms.Select(attrs={'class': 'form-select'}),
     )
 
     tipo_personalizado = forms.CharField(
         required=False,
         widget=forms.TextInput(attrs={
-            'class': 'form-control mt-2',
+            'class': 'form-control', 
             'placeholder': 'Especifique o tipo'
-        })
+        }),
+        label="Outro tipo"
     )
 
     validade = forms.DateField(
-        required=False,
-        widget=forms.DateInput(attrs={
-            'type': 'date',
-            'class': 'form-control',
-            'placeholder': 'Validade'
-        }),
-        label='Data de validade'
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+        label='Validade',
     )
 
     preco_unitario = forms.DecimalField(
         required=False,
-        widget=forms.NumberInput(attrs={
-            'class': 'form-control',
-            'placeholder': '00,00',
-            'step': '0.01'
-        })
+        widget=forms.TextInput(attrs={
+            'class': 'form-control text-start',
+            'placeholder': 'R$ 0,00',
+            'data-mask': '000.000.000,00',
+            'data-inputmask-unmaskasnumber': 'true',
+        }),
+        max_digits=10, decimal_places=2,
+        label='Preço Unitário'
     )
 
     class Meta:
         model = EntradaEstoque
-        fields = ['produto', 'quantidade', 'tipo', 'validade', 'tipo_personalizado', 'preco_unitario', 'observacoes']
+        fields = ['produto', 'quantidade', 'tipo', 'validade', 'preco_unitario', 'observacoes']
         widgets = {
-            'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Quantidade'}),
-            'observacoes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Observações'}),
+            'quantidade': forms.NumberInput(attrs={'class': 'form-control'}),
+            'observacoes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
         }
 
     def clean(self):
         cleaned_data = super().clean()
-        tipo = cleaned_data.get('tipo')
-        tipo_personalizado = cleaned_data.get('tipo_personalizado')
+        tipo = cleaned_data.get("tipo")
+        tipo_personalizado = cleaned_data.get("tipo_personalizado")
 
-        if tipo == 'outro' and not tipo_personalizado:
-            self.add_error('tipo_personalizado', 'Por favor, especifique o tipo.')
+        if tipo == "Outro" and tipo_personalizado:
+            cleaned_data["tipo"] = tipo_personalizado  # Substitui pelo valor digitado
+        elif tipo == "Outro" and not tipo_personalizado:
+            self.add_error("tipo_personalizado", "Por favor, informe um tipo personalizado.")
 
-        return cleaned_data     
+        return cleaned_data  
 
-    def clean_preco_unitario(self):
-        preco_unitario = self.cleaned_data.get('preco_unitario')
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        preco_unitario = self.data.get('preco_unitario')
         if preco_unitario:
-            if isinstance(preco_unitario, str):
-                preco_unitario = preco_unitario.replace("R$", "").replace(".", "").replace(",", ".").strip()
             try:
-                return Decimal(preco_unitario)
-            except (ValueError, TypeError, InvalidOperation):
-                raise forms.ValidationError("Preço inválido.")
-        return Decimal('0.00')  # se vazio, retorna 0.00
+                self.data = self.data.copy()
+                preco_unitario = preco_unitario.replace("R$", "").replace(".", "").replace(",", ".").strip()
+                self.data['preco_unitario'] = str(Decimal(preco_unitario))
+            except (InvalidOperation, ValueError):
+                pass
+
+# SAIDA FORM
+class SaidaForm(forms.ModelForm):
+    # Campo auxiliar para adicionar produtos à lista (não será salvo diretamente)
+    produto = forms.ModelChoiceField(
+        queryset=Produto.objects.filter(ativo=True).order_by('item'),
+        empty_label="Selecione um produto",
+        widget=forms.Select(attrs={'class': 'form-select2 form-select'}),
+        required=False,
+    )
+
+    quantidade_individual = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Quantidade'}),
+        label="Quantidade"
+    )
+
+    valor_unitario = forms.DecimalField(
+        required=False,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'readonly': 'readonly',
+            'placeholder': 'R$ 0,00'
+        }),
+        label='Preço Unitário',
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    tipo = forms.ChoiceField(
+        choices=SaidaEstoque.TIPOS_SAIDA,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+
+    tipo_personalizado = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Especifique o tipo'
+        }),
+        label="Outro tipo"
+    )
+
+    class Meta:
+        model = SaidaEstoque
+        fields = ['tipo', 'observacoes']
+        widgets = {
+            'observacoes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        tipo = cleaned_data.get("tipo")
+        tipo_personalizado = cleaned_data.get("tipo_personalizado")
+
+        if tipo == "Outro" and tipo_personalizado:
+            cleaned_data["tipo"] = tipo_personalizado
+        elif tipo == "Outro" and not tipo_personalizado:
+            self.add_error("tipo_personalizado", "Por favor, informe um tipo personalizado.")
+
+        return cleaned_data
+
 
 
 # PERFIL FORM
 class ProfileForm(forms.ModelForm):
+    def __init__(self, *args, mostrar_cargo=True, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not mostrar_cargo:
+            self.fields.pop('cargo')
+
     class Meta:
         model = CustomUser
         fields = ['username', 'first_name', 'last_name', 'email', 'cargo']
@@ -300,14 +355,3 @@ class UsuarioCreateForm(UserCreationForm):
             del self.fields['password1']
             del self.fields['password2']
 
-        
-# FORM MONEY
-class CustomMoneyField(MoneyField):
-    def to_python(self, value):
-        if isinstance(value, str):
-            value = value.replace('R$', '').replace('.', '').replace(',', '.').strip()
-        try:
-            value = Decimal(value)
-        except (InvalidOperation, ValueError, TypeError):
-            raise ValidationError('Preço inválido.')
-        return super().to_python(value)

@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Saídas{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="{% static 'css/movimentacoes.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Registrar Saída</h2>
+    <form method="post" id="saida-form">
+        {% csrf_token %}
+    
+        <div class="row g-3 mb-3 align-items-end">
+            <div class="col-md-4">
+                <label for="id_produto" class="form-label">Produto</label>
+                {{ form.produto|add_class:"form-select2"|attr:"id:id_produto" }}
+            </div>
+            <div class="col-md-2 position-relative">
+                <span id="estoque-disponivel" class="badge rounded-pill text-bg-info text-muted small"
+                    style="position: absolute; top: -10px; right: 0; z-index: 10; display: none;">
+                    Disponível: <strong>0</strong>
+                </span>
+                <label for="id_quantidade_individual" class="form-label">Quantidade</label>
+                {{ form.quantidade_individual|add_class:"form-control" }}
+            </div>
+            <div class="col-md-2">
+                <label for="{{ form.preco_unitario.id_for_label }}" class="form-label">Preço Unitário</label>
+                <div class="input-group">
+                    <span class="input-group-text" style="border-color: transparent;">R$</span>
+                    <input type="text" name="preco_unitario" id="id_preco_unitario" class="form-control" readonly>
+                </div>
+            </div>            
+            <div class="col-md-2" id="div_tipo">
+                <label for="id_tipo" class="form-label">Tipo</label>
+                {{ form.tipo }}
+            </div>
+            <div class="col-md-2" id="div_tipo_personalizado" style="display:none;">
+                <label for="id_tipo_personalizado" class="form-label">Tipo personalizado</label>
+                {{ form.tipo_personalizado }}
+            </div>            
+            <div class="col-md-2">
+                <button type="button" class="btn btn-warning w-100" id="add-item">
+                    <i class="icon bi bi-plus-circle-fill"></i>&nbsp;&nbsp; Adicionar</button>
+            </div>
+        </div>        
+    
+        <table class="table table-bordered" id="tabela-saida">
+            <thead>
+                <tr class="text-center">
+                    <th>Produto</th>
+                    <th>Quantidade</th>
+                    <th>Valor Unitário</th>
+                    <th>Valor Total</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Linhas via JS -->
+            </tbody>
+            <tfoot style="display: none;">
+                <tr style="border-top: 2px solid #dee2e6;">
+                    <td colspan="3" class="fw-bold">Total Geral:</td>
+                    <td></td>
+                    <td id="total-geral" class="text-end fw-bold">0,00</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="mb-3">
+            <label for="id_observacoes" class="form-label">Observações</label>
+            {{ form.observacoes|attr:"placeholder:Observação..." }}
+        </div>
+        
+        <input type="hidden" name="itens_json" id="itens_json">
+
+        <button type="submit" class="btn btn-blue">Finalizar Saída</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function () {
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    });
+
+    $(function () {
+        const produtos = {{ produtos_json| safe }};
+        const $badge = $('#estoque-disponivel');
+
+        $('#id_produto').on('change', function () {
+            const selectedId = $(this).val();
+            const produto = produtos.find(p => p.id == selectedId);
+
+            if (produto) {
+                const preco = parseFloat(produto.preco).toFixed(2).replace('.', ',');
+                $('input[name="preco_unitario"]').val(preco).prop('readonly', true);
+
+                $badge.html(`Disponível: <strong>${produto.estoque}</strong>`).fadeIn();
+            } else {
+                $('input[name="preco_unitario"]').val('').prop('readonly', true);
+                $badge.fadeOut();
+            }
+        });
+
+
+        $('.form-select2').select2({
+            width: '100%',
+            placeholder: 'Selecione um produto'
+        });
+
+        $('#add-item').click(function () {
+            const prodSel = $('#id_produto'),
+                prodId = prodSel.val(),
+                prodTxt = prodSel.find('option:selected').text(),
+                produto = produtos.find(p => p.id == prodId),
+                estoque = produto ? produto.estoque : 0,
+                qtd = parseInt($('#id_quantidade_individual').val(), 10),
+                valorU = produto ? parseFloat(produto.preco) : NaN;
+            
+            if (!prodId || !qtd || qtd <= 0 || isNaN(valorU)) {
+                document.dispatchEvent(new CustomEvent('show-message', {
+                    detail: {
+                        tipo: 'warning', // success, danger, info...
+                        mensagem: 'Produto e Quantidade precisam ser válidos!'
+                    }
+                }));
+                return; 
+            }
+            if ($(`#item-${prodId}`).length) {
+                document.dispatchEvent(new CustomEvent('show-message', {
+                    detail: {
+                        tipo: 'info',
+                        mensagem: 'Produto adicionado.'
+                    }
+                }));
+                return; 
+            }
+
+            const total = (qtd * valorU).toFixed(2).replace('.', ',');
+            if (qtd > estoque) {
+                document.dispatchEvent(new CustomEvent('show-message', {
+                    detail: {
+                        tipo: 'info',
+                        mensagem: "Quantidade maior que a disponivel no estoque: (" + estoque + " Disponivel/s)"
+                    }
+                }));
+                return; 
+            }
+            const linha = `
+                <tr id="item-${prodId}" class="text-center">
+                    <td>
+                        <input type="hidden" name="produtos[]" value="${prodId}">
+                        ${prodTxt}
+                    </td>
+                    <td>
+                        <input type="hidden" name="quantidades[]" value="${qtd}">
+                        ${qtd}
+                    </td>
+                    <td>
+                        <input type="hidden" name="valores_unitarios[]" value="${valorU.toFixed(2)}">
+                        R$ ${valorU.toFixed(2).replace('.', ',')}
+                    </td>
+                    <td>R$ ${total}</td>
+                    <td><button type="button" class="btn btn-sm btn-danger remover">✖</button></td>
+                </tr>`;
+
+            $('#tabela-saida tbody').append(linha);
+
+            // Limpa inputs
+            prodSel.val(null).trigger('change');
+            $('#id_quantidade').val('');
+            $('input[name="preco_unitario"]').val('');
+
+            $('#id_tipo').prop('readonly', true);
+            $('#id_tipo').addClass('text-secondary');
+            atualizarJSON(); // Atualiza o JSON depois de mexer na tabela
+        });
+
+        $('#tabela-saida').on('click', '.remover', function () {
+            $(this).closest('tr').remove();
+            // Se não tiver mais itens na tabela, libera o campo tipo
+            if ($('#tabela-saida tbody tr').length === 0) {
+                $('#id_tipo').addClass('text-body');
+                $('#id_tipo').prop('readonly', false);
+            }
+            atualizarJSON();
+        });
+
+        function atualizarBotaoFinalizar() {
+            const temItens = $('#tabela-saida tbody tr').length > 0;
+            $('button[type="submit"]').prop('disabled', !temItens);
+        }        
+        
+        function atualizarJSON() {
+            let itens = [];
+            let totalGeral = 0;
+
+            $('#tabela-saida tbody tr').each(function () {
+                const id = $(this).attr('id').replace('item-', '');
+                const qtd = parseInt($(this).find('input[name="quantidades[]"]').val(), 10);
+                const valorU = parseFloat($(this).find('input[name="valores_unitarios[]"]').val());
+                const total = qtd * valorU;
+                totalGeral += total;
+
+                itens.push({ produto_id: id, quantidade: qtd, valor_unitario: valorU });
+            });
+
+            // Atualiza JSON escondido
+            $('#itens_json').val(JSON.stringify(itens));
+
+            // Atualiza o total
+            if (itens.length > 0) {
+                $('#total-geral').text(`R$ ${totalGeral.toFixed(2).replace('.', ',')}`);
+                $('#tabela-saida tfoot').fadeIn();
+            } else {
+                $('#total-geral').text('R$ 0,00');
+                $('#tabela-saida tfoot').fadeOut();
+            }
+            atualizarBotaoFinalizar();
+        }
+
+        $('#saida-form').on('submit', function (e) {
+            atualizarJSON();
+            const itensJson = $('#itens_json').val();
+            const lista = JSON.parse(itensJson || '[]');
+            if ($('#div_tipo_personalizado').is(':visible')) {
+                $('#div_tipo select, #div_tipo input').val($('#id_tipo_personalizado').val());
+            }
+            if (lista.length === 0) {
+                e.preventDefault();
+                document.dispatchEvent(new CustomEvent('show-message', {
+                    detail: {
+                        tipo: 'danger',
+                        mensagem: 'Adicione pelo menos um item antes de finalizar a saída.'
+                    }
+                }));
+            }
+        });
+        
+        const divTipo = $('#div_tipo');
+        const divTipoPersonalizado = $('#div_tipo_personalizado');
+        const tipoPersonalizadoInput = $('#id_tipo_personalizado');
+        const selectTipo = $('#id_tipo');
+
+        function toggleTipoFields() {
+            if (selectTipo.val() === 'outro') {  // Troque 'outro' pelo valor que você usa para esse caso
+                divTipo.hide();
+                divTipoPersonalizado.show();
+            } else {
+                divTipo.show();
+                divTipoPersonalizado.hide();
+                tipoPersonalizadoInput.val('');  // Limpa quando não for personalizado
+            }
+        }
+
+        selectTipo.on('change', toggleTipoFields);
+
+        // Inicializa no carregamento também
+        toggleTipoFields();
+
+    });
+</script>
+{% endblock %}

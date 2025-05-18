@@ -5,13 +5,13 @@ from django.contrib.auth import login
 from django.contrib import messages
 from datetime import datetime
 from django.utils.timezone import localtime
-from .models import Produto, CustomUser, LogDeAcao
-from .forms import ProdutoForm, ProfileForm, UsuarioCreateForm, AlterarSenhaForm, EntradaEstoqueForm
+from .models import Produto, CustomUser, LogDeAcao, ItemSaida, Movimentacao
+from .forms import ProdutoForm, ProfileForm, UsuarioCreateForm, AlterarSenhaForm, EntradaEstoqueForm, SaidaForm
 from django.contrib.auth import update_session_auth_hash
 from django.core.paginator import Paginator
-from django.utils import timezone
 from django.core.serializers.json import DjangoJSONEncoder
 import json
+from decimal import Decimal
 
 # PERMISSÕES
 def tem_permissao_usuario(usuario, permissao):
@@ -258,65 +258,162 @@ def cadastrar_produto(request):
 
     return render(request, 'products.html', {'form': form})
 
-# ENTRADAS
+# MOVIMENTAÇÕES
 @login_required
 @permissao_necessaria(Permissoes.ATUALIZAR_ESTOQUE)
 def registrar_entrada(request):
     if request.method == 'POST':
         form = EntradaEstoqueForm(request.POST)
-        print("POST recebido:", request.POST)
         if form.is_valid():
             entrada = form.save(commit=False)
-            tipo_personalizado = form.cleaned_data.get('tipo_personalizado')
-
-            if entrada.tipo == "Outro" and tipo_personalizado:
-                entrada.tipo = tipo_personalizado
-
             entrada.usuario = request.user
             entrada.save()
             messages.success(request, 'Entrada registrada com sucesso!', extra_tags='success')
+            registrar_log(
+                request.user,
+                'success',
+                "Cadastro de Entrada",
+                f"{entrada.produto} | Qnt. {entrada.quantidade} - Validade: {entrada.validade} | {entrada.observacoes}"
+            )
             return redirect('home')
         else:
             for field in form:
                 for error in field.errors:
-                    messages.error(request, f"Erro ao Registrar Entrada | {field.label} | {error}", extra_tags='danger')
+                    messages.error(request, f"Erro | {field.label} | {error}", extra_tags='danger')
             for error in form.non_field_errors():
                 messages.error(request, error, extra_tags='danger')
     else:
         form = EntradaEstoqueForm()
-    
-    produtos = Produto.objects.filter(ativo=True).values('id', 'sku', 'estoque', 'unidade_medida')
 
+    produtos = Produto.objects.filter(ativo=True).values('id', 'sku', 'estoque', 'unidade_medida', 'preco')
     return render(request, 'movimentacao/entradas.html', {
         'form': form,
-        'produtos_json': json.dumps(list(produtos), cls=DjangoJSONEncoder)
+        'produtos_json': json.dumps(list(produtos), cls=DjangoJSONEncoder),
     })
 
+# SAIDA
+@login_required
+@permissao_necessaria(Permissoes.REGISTRAR_VENDA)
+def registrar_saida(request):
+    if request.method == 'POST':
+        itens_json = request.POST.get('itens_json')
+        if not itens_json:
+            messages.error(request, "Nenhum item adicionado!")
+            return redirect('movimentacao/saidas.html')
+
+        try:
+            itens = json.loads(itens_json)
+        except json.JSONDecodeError:
+            messages.error(request, "Erro ao processar os itens!")
+            return redirect('movimentacao/saidas.html')
+
+        form = SaidaForm(request.POST)
+        if form.is_valid():
+            # Calcula o valor total da saída somando todos os itens
+            valor_total = 0
+            produtos_objs = {}
+            for item in itens:
+                produto = Produto.objects.get(id=item['produto_id'])
+                quantidade = int(item['quantidade'])
+                preco_unitario = item.get('preco_unitario', produto.preco)
+
+                if produto.estoque < quantidade:
+                    messages.error(request, f"Estoque insuficiente para o produto {produto.item}!")
+                    return redirect('movimentacao/saidas.html')
+
+                valor_total += preco_unitario * quantidade
+                produtos_objs[produto.id] = (produto, quantidade, preco_unitario)
+
+            saida = form.save(commit=False)
+            saida.itens = itens_json
+            saida.quantidade_total = sum([item['quantidade'] for item in itens])
+            saida.valor_total = valor_total
+            saida.usuario = request.user
+            saida.save()
+
+            # Cria os itens da saída e atualiza estoque
+            for produto_id, (produto, quantidade, preco_unitario) in produtos_objs.items():
+                ItemSaida.objects.create(
+                    saida=saida,
+                    produto=produto,
+                    quantidade=quantidade,
+                    preco_unitario=preco_unitario
+                )
+                # Atualiza estoque
+                produto.estoque -= quantidade
+                produto.save()
+
+                # Cria movimentação, se tiver esse modelo
+                Movimentacao.objects.create(
+                    produto=produto,
+                    quantidade=quantidade,
+                    tipo='Saída',
+                    subtipo=saida.tipo,
+                    data=saida.data,
+                    preco_unitario=preco_unitario,
+                    observacoes=saida.observacoes,
+                    usuario=request.user
+                )
+
+            messages.success(request, 'Saída registrada com sucesso!', extra_tags='success')
+            produtos_str = ', '.join(
+                f"{produto.item} (x{quantidade})"
+                for produto, quantidade, _ in produtos_objs.values()
+            )
+
+            registrar_log(
+                request.user,
+                'success',
+                "Cadastro de Saída",
+                f"Produtos: {produtos_str}. Valor total: {saida.valor_total}"
+            )
+            return redirect('home')
+        else:
+            messages.error(request, "Erro ao salvar o formulário!", extra_tags='danger')
+            for field in form:
+                for error in field.errors:
+                    messages.error(request, f"Erro | {field.label} | {error}", extra_tags='danger')
+            for error in form.non_field_errors():
+                messages.error(request, error, extra_tags='danger')
+
+    produtos = Produto.objects.filter(ativo=True).values('id', 'item', 'preco', 'estoque')
+    context = {
+        'form': SaidaForm(),
+        'produtos_json': json.dumps(list(produtos), cls=DjangoJSONEncoder),
+    }
+    return render(request, 'movimentacao/saidas.html', context)
 
 
 # PERFIL PAGE
 @login_required
 def perfil(request):
     user = request.user
-    profile_form = ProfileForm(instance=user)
+    profile_form = ProfileForm(instance=user, mostrar_cargo=False)
     senha_form = AlterarSenhaForm()
 
     permissoes_usuario = permissoes_por_cargo.get(user.cargo, [])
     historico = LogDeAcao.objects.filter(usuario=request.user).order_by('-data')[:50]
 
     if request.method == 'POST':
-        profile_form = ProfileForm(request.POST, instance=user)
+        if 'submit_perfil' in request.POST:
+            profile_form = ProfileForm(request.POST, instance=user, mostrar_cargo=False)
 
-        senha_atual = request.POST.get('senha_atual')
-        nova_senha = request.POST.get('nova_senha')
-        confirmar_senha = request.POST.get('confirmar_senha')
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, 'Dados atualizados com sucesso!', extra_tags='success')
+                return redirect('profile')
+            else:
+                for field in profile_form:
+                    for error in field.errors:
+                        messages.error(request, f"Erro ao editar alteração | {field.label} | {error}", extra_tags='danger')
+                for error in profile_form.non_field_errors():
+                    messages.error(request, error, extra_tags='danger')
 
-        if profile_form.is_valid():
-            profile_form.save()
-            messages.success(request, 'Dados atualizados com sucesso!')
+        elif 'submit_senha' in request.POST:
+            senha_atual = request.POST.get('senha_atual')
+            nova_senha = request.POST.get('nova_senha')
+            confirmar_senha = request.POST.get('confirmar_senha')
 
-        # Lógica para alterar a senha
-        if senha_atual or nova_senha or confirmar_senha:
             if not user.check_password(senha_atual):
                 messages.error(request, 'Senha atual incorreta')
             elif nova_senha != confirmar_senha:
@@ -326,12 +423,8 @@ def perfil(request):
                 user.save()
                 update_session_auth_hash(request, user)
                 messages.success(request, 'Senha alterada com sucesso!')
+                return redirect('profile')
 
-        return redirect('profile')
-
-    else:
-        profile_form = ProfileForm(instance=user)
-    
     paginator = Paginator(historico, 10)  # 10 ações por página
     page_number = request.GET.get('page')
     historico_page = paginator.get_page(page_number)

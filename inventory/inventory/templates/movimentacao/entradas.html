@@ -3,6 +3,11 @@
 {% load widget_tweaks %}
 
 {% block title %}Entradas{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
 {% block content %}
 <div class="container mt-5">
     <h2 class="mb-4">Registrar Entrada no Estoque</h2>
@@ -12,7 +17,7 @@
         <div class="row g-3 mb-3">
             <div class="col-md-6">
                 <label for="id_produto" class="form-label">Produto</label>
-                {{ form.produto }}
+                {{ form.produto|add_class:"form-select2" }}
             </div>
             <div class="col-md-3">
                 <label for="id_quantidade" class="form-label">Quantidade</label>
@@ -38,7 +43,7 @@
                         data-bs-title="Caso nenhuma das opções, deixe a seleção em branco e digite ao lado a especificação."></i>
                     {{ form.tipo }}
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 d-none" id="id_tipo_personalizado">
                 <label for="id_tipo_personalizado" class="form-label">Outro Tipo</label>
                 {{ form.tipo_personalizado }}
             </div>
@@ -47,14 +52,17 @@
         <!-- Detalhes dinâmicos do produto selecionado -->
         <div id="detalhes-produto" class="card p-3 mb-2 d-none">
             <div class="row">
-                <div class="col-4">
+                <div class="col-3">
                     <p><strong>SKU:</strong> <span id="sku-produto"></span></p>
                 </div>
-                <div class="col-4">
+                <div class="col-3">
                     <p><strong>Estoque atual:</strong> <span id="estoque-produto"></span></p>
                 </div>
-                <div class="col-4">
+                <div class="col-3">
                     <p><strong>Unidade:</strong> <span id="unidade-produto"></span></p>
+                </div>
+                <div class="col-3">
+                    <p><strong>Preço:</strong> <span id="preco-produto"></span></p>
                 </div>
             </div>
         </div>
@@ -72,8 +80,16 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- JS do jQuery e do Select2 -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function () {
+        $('.form-select2').select2({
+            width: '100%',
+            placeholder: 'Selecione um produto'
+        });
+
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
         const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
 
@@ -92,13 +108,14 @@
     });
 
     const produtos = {{ produtos_json| safe }};
-    const produtoSelect = document.getElementById('id_produto');
     const detalhesDiv = document.getElementById('detalhes-produto');
     const spanSku = document.getElementById('sku-produto');
     const spanEstoque = document.getElementById('estoque-produto');
     const spanUnidade = document.getElementById('unidade-produto');
-
-    produtoSelect.addEventListener('change', function () {
+    const spanPreco = document.getElementById('preco-produto');
+    console.log(produtos, spanPreco);
+    $('.form-select2').on('change', function () {
+        
         const produtoId = this.value;
         const produto = produtos.find(p => p.id == produtoId);
 
@@ -107,24 +124,25 @@
             spanSku.textContent = produto.sku;
             spanEstoque.textContent = produto.estoque;
             spanUnidade.textContent = produto.unidade_medida;
+            spanPreco.textContent = produto.preco;
         } else {
             detalhesDiv.classList.add('d-none');
         }
     });
     
-    const tipoSelect = $('#id_tipo');
-    const tipoPersonalizadoInput = $('[name="tipo_personalizado"]');
+    const tipoSelect = document.getElementById('id_tipo');
+    const tipoPersonalizadoInput = document.getElementById('id_tipo_personalizado');
 
     function toggleTipoPersonalizado() {
-        if (tipoSelect.val() === 'outro') {
-            tipoPersonalizadoInput.closest('div').removeClass('d-none');
+        if (tipoSelect.value === 'outro' || tipoSelect.value.toLowerCase() === 'outro') {
+            tipoPersonalizadoInput.classList.remove('d-none');
         } else {
-            tipoPersonalizadoInput.closest('div').addClass('d-none');
-            tipoPersonalizadoInput.val('');
+            tipoPersonalizadoInput.classList.add('d-none');
+            tipoPersonalizadoInput.value = '';
         }
     }
 
-    tipoSelect.on('change', toggleTipoPersonalizado);
+    tipoSelect.addEventListener('change', toggleTipoPersonalizado);
     toggleTipoPersonalizado();
 
 </script>

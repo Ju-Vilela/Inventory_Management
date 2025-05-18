@@ -12,7 +12,7 @@
 {% block content %}
 <div class="perfil-container container-fluid">
     <div class="logo">
-        <h1><i class="bi bi-gear icon"></i> Configurações da Conta</h1>
+        <h1><i class="bi bi-gear-wide-connected icon"></i> Configurações {{ request.user.first_name }} {{ request.user.last_name }}</h1>
     </div>
 
     <div class="row w-100 equal-height">
@@ -20,30 +20,37 @@
             <!-- Card de Informações da Conta -->
             <div class="card info-card">
                 <h3 class="name">Informações da Conta</h3>
-                <p><i class="bi bi-envelope"></i><span class="property">Email:</span> {{ usuario.email }}</p>
-                <p><i class="bi bi-briefcase"></i><span class="property">Cargo:</span> {{ usuario.cargo }}</p>
-                <p><i class="bi bi-clock"></i><span class="property">Último Login:</span> {{ usuario.last_login|date:"d.m.Y h:i:s" }}</p>
-                <p><i class="bi bi-calendar"></i><span class="property">Conta criada em:</span> {{ usuario.date_joined|date:"d.m.Y H:i:s" }}</p>
+                <p><i class="bi bi-envelope-fill"></i><span class="property">Email:</span> {{ usuario.email }}</p>
+                <p><i class="bi bi-briefcase-fill"></i><span class="property">Cargo:</span> {{ usuario.cargo }}</p>
+                <p><i class="bi bi-clock-fill"></i><span class="property">Último Login:</span> {{ usuario.last_login|date:"d.m.Y h:i:s" }}</p>
+                <p><i class="bi bi-calendar-fill"></i><span class="property">Conta criada em:</span> {{ usuario.date_joined|date:"d.m.Y H:i:s" }}</p>
             </div>
         </div>
 
         <div class="col-md-7">
             <!-- Card de Permissões -->
             <div class="card permissoes">
-                    <div class="permissoes">
-                        <fieldset>
-                            <legend><i class="bi bi-lock"></i> Permissões</legend>
-                            {% if permissoes %}
-                                <div class="permissao">
-                                    {% for permissao in permissoes %}
-                                    <span><strong>{{ forloop.counter }}:</strong> {{ permissao }}</span>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                <p>Este cargo não possui permissões definidas.</p>
-                            {% endif %}
-                        </fieldset>
-                    </div>
+                <div class="permissoes">
+                    {% if permissoes %}
+                    <fieldset>
+                        <legend><i class="bi bi-lock"></i> Permissões</legend>
+                        <div class="row">
+                            <div class="col-md-6">
+                                {% for permissao in permissoes|slice:":6" %}
+                                <p><strong>{{ forloop.counter }}.&nbsp;</strong> {{ permissao }}</p>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                {% for permissao in permissoes|slice:"6:" %}
+                                <p><strong>{{ forloop.counter|add:"6" }}.&nbsp;</strong> {{ permissao }}</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </fieldset>
+                    {% else %}
+                    <p>Este cargo não possui permissões definidas.</p>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -55,29 +62,40 @@
                 <!-- FORMULÁRIO DE PERFIL -->
                 <form method="post" class="perfil-form">
                     {% csrf_token %}
-                        <div class="dados-pessoais">
-                            <fieldset>
-                                <legend><i class="bi bi-info-circle"></i> Dados Pessoais</legend>
-                                <hr>
-                                {{ profile_form.as_p }}
-                            </fieldset>
-                        </div>
-                    <button type="submit" name="submit_perfil" class="btn-blue">Salvar Dados</button>
-                </form>
+                    <fieldset>
+                        <legend><i class="bi bi-person-fill"></i> Dados Pessoais</legend>
+                        <hr>
+                        {% for field in profile_form %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}">
+                                    <strong>{{ field.label }}</strong>
+                                    {% if field.help_text %}
+                                        <i class="bi bi-question-circle-fill help-tooltip" data-bs-toggle="tooltip" data-bs-placement="right"
+                                            data-bs-title="{{ field.help_text|striptags }}" style="font-size: 14px;"></i>
+                                    {% endif %}
+                                </label>
+                                {{ field }}
+                            </div>                        
+                        {% endfor %}
+                        <button type="submit" name="submit_perfil" class="btn-blue">Salvar Dados</button>
+                    </fieldset>
+                </form>                
             </div>
             
             <div class="col-md-6">
             <!-- FORMULÁRIO DE SENHA -->
                 <form method="post" class="senha-form mt-4">
                     {% csrf_token %}
+                    <fieldset>
                         <div class="alteracao-senha">
-                            <fieldset>
-                                <legend><i class="bi bi-key"></i> Alterar Senha</legend>
-                                <hr>
+                            <legend><i class="bi bi-key-fill"></i> Alterar Senha</legend>
+                            <hr>
+                            <div class="mb-3">
                                 {{ senha_form.as_p }}
-                            </fieldset>
+                            </div>
+                            <button type="submit" name="submit_senha" class="btn-blue">Alterar Senha</button>
                         </div>
-                        <button type="submit" name="submit_senha" class="btn-blue">Alterar Senha</button>
+                    </fieldset>
                 </form>
             </div>
         </div>
@@ -141,4 +159,13 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>
 {% endblock %}
