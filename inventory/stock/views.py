@@ -5,13 +5,14 @@ from django.contrib.auth import login
 from django.contrib import messages
 from datetime import datetime
 from django.utils.timezone import localtime
-from .models import Produto, CustomUser, LogDeAcao, ItemSaida, Movimentacao
+from .models import Produto, CustomUser, LogDeAcao, ItemSaida, Movimentacao, EntradaEstoque, SaidaEstoque
 from .forms import ProdutoForm, ProfileForm, UsuarioCreateForm, AlterarSenhaForm, EntradaEstoqueForm, SaidaForm
 from django.contrib.auth import update_session_auth_hash
 from django.core.paginator import Paginator
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from decimal import Decimal
+
 
 # PERMISSÕES
 def tem_permissao_usuario(usuario, permissao):
@@ -233,7 +234,6 @@ def cadastrar_produto(request):
             produto.categoria = nova_categoria or categoria
 
             produto.marca = produto.marca or "sem marca"
-            produto.vendas = produto.vendas or 0
             produto.preco = produto.preco or 0.00
 
             produto.save()
@@ -242,7 +242,7 @@ def cadastrar_produto(request):
                 request.user,
                 'success',
                 "Cadastro de Produto",
-                f"{produto.item} - {produto.marca} | {produto.categoria} | V: {produto.vendas} | R$ {produto.preco}"
+                f"{produto.item} - {produto.marca} | {produto.categoria} |  R$ {produto.preco}"
             )
             return redirect('home')
         else:
@@ -273,7 +273,7 @@ def registrar_entrada(request):
                 request.user,
                 'success',
                 "Cadastro de Entrada",
-                f"{entrada.produto} | Qnt. {entrada.quantidade} - Validade: {entrada.validade} | {entrada.observacoes}"
+                f"{entrada.produto} | Qnt. {entrada.quantidade} - Validade: {entrada.validade} | R$ {entrada.preco_unitario} {entrada.observacoes}"
             )
             return redirect('home')
         else:
@@ -286,10 +286,20 @@ def registrar_entrada(request):
         form = EntradaEstoqueForm()
 
     produtos = Produto.objects.filter(ativo=True).values('id', 'sku', 'estoque', 'unidade_medida', 'preco')
+    entradas = EntradaEstoque.objects.select_related('produto', 'usuario').order_by('-data')
+
+    for entrada in entradas:
+        if entrada.preco_unitario is not None:
+            total = entrada.preco_unitario * entrada.quantidade
+            entrada.total = total.amount  # só o número
+        else:
+            entrada.total = 0
     return render(request, 'movimentacao/entradas.html', {
         'form': form,
         'produtos_json': json.dumps(list(produtos), cls=DjangoJSONEncoder),
+        'entradas': entradas,
     })
+
 
 # SAIDA
 @login_required
@@ -332,13 +342,14 @@ def registrar_saida(request):
             saida.save()
 
             # Cria os itens da saída e atualiza estoque
-            for produto_id, (produto, quantidade, preco_unitario) in produtos_objs.items():
+            for produto_id, (produto, quantidade, valor) in produtos_objs.items():
                 ItemSaida.objects.create(
                     saida=saida,
                     produto=produto,
                     quantidade=quantidade,
-                    preco_unitario=preco_unitario
+                    valor=valor*quantidade
                 )
+                print(f"Item criado: produto={produto.item}, valor={ItemSaida.valor}")
                 # Atualiza estoque
                 produto.estoque -= quantidade
                 produto.save()
@@ -350,7 +361,7 @@ def registrar_saida(request):
                     tipo='Saída',
                     subtipo=saida.tipo,
                     data=saida.data,
-                    preco_unitario=preco_unitario,
+                    preco_unitario=valor,
                     observacoes=saida.observacoes,
                     usuario=request.user
                 )
@@ -360,10 +371,9 @@ def registrar_saida(request):
                 f"{produto.item} (x{quantidade})"
                 for produto, quantidade, _ in produtos_objs.values()
             )
-
             registrar_log(
                 request.user,
-                'success',
+                'danger',
                 "Cadastro de Saída",
                 f"Produtos: {produtos_str}. Valor total: {saida.valor_total}"
             )
@@ -383,6 +393,17 @@ def registrar_saida(request):
     }
     return render(request, 'movimentacao/saidas.html', context)
 
+@login_required
+def listar_movimentacoes(request):
+    entradas = EntradaEstoque.objects.select_related('usuario').prefetch_related('itens_entrada__produto').order_by('-data')
+    saidas = SaidaEstoque.objects.select_related('usuario').prefetch_related('itens_saida__produto').order_by('-data')
+
+    context = {
+        'entradas': entradas,
+        'saidas': saidas,
+        'timestamp': datetime.now().timestamp(),
+    }
+    return render(request, 'movimentacao.html', context)
 
 # PERFIL PAGE
 @login_required

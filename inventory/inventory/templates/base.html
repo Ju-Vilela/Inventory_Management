@@ -42,16 +42,9 @@
                             <i class="icon bi bi-list-ul"></i> Produtos
                         </li>
                     </a>
-                    {% if request.user.is_admin or request.user.is_manager %}
-                    <a href="{% url 'entradas' %}">
-                        <li class="{% if request.resolver_match.url_name == 'entradas' %}active{% endif %}">
-                            <i class="icon bi bi-node-plus-fill" style="rotate: 180deg;"></i> Entradas
-                        </li>
-                    </a>
-                    {% endif %}
-                    <a href="{% url 'saidas' %}">
-                        <li class="{% if request.resolver_match.url_name == 'saidas' %}active{% endif %}">
-                            <i class="icon bi bi-node-minus-fill" style="rotate: 180deg;"></i> Saídas
+                    <a href="{% url 'movimentacoes' %}">
+                        <li class="{% if request.resolver_match.url_name == 'movimentacoes' %}active{% endif %}">
+                            <i class="icon bi bi-activity"></i> Movimentações
                         </li>
                     </a>
                     <a href="{% url 'profile' %}">

@@ -58,7 +58,7 @@ class Produto(models.Model):
     estoque_minimo = models.PositiveIntegerField(default=0, help_text="Estoque mínimo antes de alerta")
     preco = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     ativo = models.BooleanField(default=True)
-    sku = models.CharField(max_length=20, unique=True, blank=True)
+    sku = models.CharField(max_length=30, unique=True, blank=True)
     data_cadastro = models.DateTimeField(auto_now_add=True)
     data_atualizacao = models.DateTimeField(auto_now=True)
 
@@ -162,6 +162,13 @@ class EntradaEstoque(models.Model):
             atualizar_estoque(self.produto, self.quantidade, 'Entrada')
         super().save(*args, **kwargs)
 
+class ItemEntrada(models.Model):
+    entrada = models.ForeignKey('EntradaEstoque', on_delete=models.CASCADE, related_name='itens_entrada')
+    produto = models.ForeignKey(Produto, on_delete=models.CASCADE)
+    quantidade = models.PositiveIntegerField()
+    valor = MoneyField(max_digits=10, decimal_places=2, default_currency='BRL', null=True, blank=True)
+
+
 # SAÍDA
 class SaidaEstoque(models.Model):
     TIPOS_SAIDA = [
@@ -199,14 +206,14 @@ class ItemSaida(models.Model):
     saida = models.ForeignKey('SaidaEstoque', on_delete=models.CASCADE, related_name='itens_saida')
     produto = models.ForeignKey(Produto, on_delete=models.CASCADE)
     quantidade = models.PositiveIntegerField()
-    preco_unitario = MoneyField(max_digits=10, decimal_places=2, default_currency='BRL', null=True, blank=True)
+    valor = MoneyField(max_digits=10, decimal_places=2, default_currency='BRL', null=True, blank=True)
 
 
 
 # HISTORICO
 class LogDeAcao(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    tipo = models.CharField(max_length=20, default='light')
+    tipo = models.CharField(max_length=50, default='light')
     acao = models.CharField(max_length=50)
     descricao = models.TextField()
     data = models.DateTimeField(auto_now_add=True)

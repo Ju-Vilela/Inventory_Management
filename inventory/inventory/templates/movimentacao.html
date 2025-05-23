@@ -2,105 +2,91 @@
 {% load static %}
 
 {% block title %}Movimentações{% endblock %}
-
-{% block extra_css %}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}?v={{ timestamp }}">
+{% endblock %}
 
 {% block content %}
 <header class="main-header">
     <h1>Movimentações</h1>
     <div class="actions d-flex gap-2 flex-wrap">
-        <div class="input-group w-auto">
-            <input type="text" class="form-control" id="buscaProdutos" placeholder="Buscar produtos..." />
-            <button class="btn btn-outline-secondary" type="button">
-                <i class="bi bi-search"></i>
-            </button>
-        </div>
         <a href="{% url 'entradas' %}">
             <button class="btn btn-blue">
-                <i class="bi bi-bag-plus-fill"></i>&nbsp;&nbsp; Entrada
+                <i class="icon bi bi-node-plus-fill" style="rotate: 180deg;"></i>&nbsp;&nbsp; Entrada
+            </button>
+        </a>
+        <a href="{% url 'saidas' %}">
+            <button class="btn btn-blue">
+                <i class="icon bi bi-node-minus-fill" style="rotate: 180deg;"></i>&nbsp;&nbsp; Saída
             </button>
         </a>
     </div>
 </header>
 
+<h2 class="mt-4 mb-2">Entradas</h2>
 <table class="product-table">
     <thead>
         <tr>
-            <th data-column="item">Item</th>
-            <th class="text-center" data-column="quantidade">Quantidade</th>
-            <th data-column="data">Data</th>
-            <th data-column="tipo">Tipo</th>
-            <th data-column="observacao">Observação</th>
-            <th data-column="usuario">Usuário</th>
+            <th>Produto</th>
+            <th>Quantidade</th>
+            <th>Valor</th>
+            <th>Tipo</th>
+            <th>Data</th>
+            <th>Usuário</th>
         </tr>
     </thead>
-    <tbody id="produtoTabela">
-        {% if produtos %}
-        {% for p in produtos %}
-        <tr class="clickable-row
-                {% if not p.ativo %}disabled-row{% endif %}
-                {% if not p.ativo and not pode_editar_inativos %} no-click{% endif %}
-                {% if not request.user.is_manager and not request.user.is_admin %} sem_permissao{% endif %}"
-            data-href="{% url 'editProduct' p.id %}" data-validade="{{ p.validade }}">
-            <td>
-                {% if not p.ativo %}
-                <i class="bi bi-slash-circle-fill text-danger" title="Produto inativo"></i>
-                {% endif %}
-                &nbsp;&nbsp;
-                {{ p.item }}
-            </td>
-            <td class="text-center">{{ p.categoria }}</td>
-            <td>{{ p.marca }}</td>
-            <td>validade</td>
-            <td>vendas</td>
-            <td class="text-center">{{ p.estoque }}</td>
+    <tbody>
+        {% if entradas %}
+        {% for e in entradas %}
+        <tr>
+            <td>{{ e.produto.item }}</td>
+            <td class="text-center">{{ e.quantidade }}</td>
+            <td>{{ e.total }}</td>
+            <td>{{ e.tipo }}</td>
+            <td>{{ e.data|date:"d/m/Y H:i" }}</td>
+            <td>{{ e.usuario }}</td>
         </tr>
         {% endfor %}
         {% else %}
         <tr>
-            <td colspan="6">Nenhum produto encontrado.</td>
+            <td colspan="6">Nenhuma entrada registrada.</td>
         </tr>
         {% endif %}
     </tbody>
 </table>
 
-{% if show_toast_inativos %}
-<div id="toastInativo" class="toast-container position-fixed bottom-0 start-50 translate-middle-x p-3"
-    style="z-index: 1055;">
-    <div class="toast fade show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
-        <div class="toast-header">
-            <i class="bi bi-slash-circle-fill text-danger"></i>&nbsp;&nbsp;
-            <strong class="me-auto">Produtos Inativos</strong>
-            <small><i class="bi bi-bag-dash"></i>&nbsp;&nbsp;{{ produtos_inativos_count }} item{% if
-                produtos_inativos_count > 1 %}s{% endif %}</small>
-            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Fechar"></button>
-        </div>
-        <div class="toast-body">
-            Você tem permissão para editar produtos inativos.
-        </div>
-    </div>
-</div>
-{% endif %}
 
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'js/home.js' %}"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const toastInativo = document.querySelector('#toastInativo');
-
-        if (toastInativo && !localStorage.getItem('toastInativoFechado')) {
-            const toastElement = new bootstrap.Toast(toastInativo.querySelector('.toast'), {
-                autohide: false
-            });
-            toastElement.show();
-
-            toastInativo.querySelector('.btn-close').addEventListener('click', () => {
-                localStorage.setItem('toastInativoFechado', 'true');
-            });
-        }
-    });
-</script>
-
+<h2 class="mt-5 mb-2">Saídas</h2>
+<table class="product-table">
+    <thead>
+        <tr>
+            <th>Produto</th>
+            <th>Quantidade</th>
+            <th>Valor</th>
+            <th>Tipo</th>
+            <th>Data</th>
+            <th>Usuário</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if saidas %}
+            {% for s in saidas %}
+                {% for item in s.itens_saida.all %}
+                <tr>
+                    <td>{{ item.produto.item }}</td>
+                    <td class="text-center">{{ item.quantidade }}</td>
+                    <td>{{ item.valor }}</td>
+                    <td>{{ s.tipo }}</td>
+                    <td>{{ s.data|date:"d/m/Y H:i" }}</td>
+                    <td>{{ s.usuario }}</td>
+                </tr>
+                {% endfor %}
+            {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="6">Nenhuma saída registrada.</td>
+        </tr>
+        {% endif %}
+    </tbody>
+</table>
 {% endblock %}
