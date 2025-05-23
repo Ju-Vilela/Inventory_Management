@@ -1,12 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login
 from django.contrib import messages
 from datetime import datetime
 from django.utils.timezone import localtime
 from .models import Produto, CustomUser, LogDeAcao, ItemSaida, Movimentacao, EntradaEstoque, SaidaEstoque
-from .forms import ProdutoForm, ProfileForm, UsuarioCreateForm, AlterarSenhaForm, EntradaEstoqueForm, SaidaForm
+from .forms import ProdutoForm, ProfileForm, CustomLoginForm, UsuarioCreateForm, AlterarSenhaForm, EntradaEstoqueForm, SaidaForm
 from django.contrib.auth import update_session_auth_hash
 from django.core.paginator import Paginator
 from django.core.serializers.json import DjangoJSONEncoder
@@ -105,7 +104,7 @@ def home(request):
 
 # LOGIN PAGE
 def login_view(request):
-    form = AuthenticationForm(request, data=request.POST or None)
+    form = CustomLoginForm(request, data=request.POST or None)
     if request.method == 'POST' and form.is_valid():
         user = form.get_user()
         login(request, user)
@@ -474,7 +473,7 @@ def is_admin(user):
 @login_required
 def users(request):
     form = UsuarioCreateForm()
-    usuarios = CustomUser.objects.all()
+    usuarios = CustomUser.objects.exclude(id=request.user.id).filter(is_superuser=False)
     context = {
         'usuarios': usuarios,
         'form': form,
@@ -485,22 +484,30 @@ def users(request):
 
 # CRIAR USUARIO
 def add_user(request):
-    usuarios = CustomUser.objects.all()
     if request.method == 'POST':
         form = UsuarioCreateForm(request.POST)
         if form.is_valid():
-            form.save()
+            novo_usuario = form.save()
             registrar_log(
                 request.user,
                 'info',
                 "Criação de Usuário",
-                f"{usuarios.username} - {usuarios.first_name} {usuarios.last_name} | {usuarios.cargo}"
+                f"{novo_usuario.username} - {novo_usuario.first_name} {novo_usuario.last_name} | {novo_usuario.cargo}"
             )
             messages.success(request, 'Usuário criado com sucesso!')
             return redirect('users')
+        else:
+            messages.error(request, 'Erro ao criar usuário', extra_tags='danger')
+            if form.errors:
+                for field in form:
+                    for error in field.errors:
+                        messages.error(request, f"{field.label} | {error}", extra_tags='danger')
+                for error in form.non_field_errors():
+                    messages.error(request, error, extra_tags='danger')
     else:
         form = UsuarioCreateForm()
 
+    usuarios = CustomUser.objects.all()
     return render(request, 'users.html', {'form': form, 'usuarios': usuarios})
 
 # EDITAR USUARIO
@@ -547,6 +554,12 @@ def edit_user(request, id):
             return redirect('users')
         else:
             messages.error(request, "Houve um erro ao processar a solicitação.", extra_tags='danger')
+            if form.errors:
+                for field in form:
+                    for error in field.errors:
+                        messages.error(request, f"{field.label} | {error}", extra_tags='danger')
+                for error in form.non_field_errors():
+                    messages.error(request, error, extra_tags='danger')
     else:
         form = UsuarioCreateForm(instance=usuario)
     

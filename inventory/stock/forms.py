@@ -342,16 +342,23 @@ class UsuarioCreateForm(UserCreationForm):
         fields = ['username', 'first_name', 'last_name', 'email', 'cargo', 'password1', 'password2']
 
     def __init__(self, *args, **kwargs):
-        # Se o formulário não estiver sendo passado com uma instância de usuário (edição), mostramos o campo 'username'
         instance = kwargs.get('instance', None)
         super().__init__(*args, **kwargs)
 
         if instance:
-            # Se for edição (com instância de usuário), podemos remover o campo 'username'
+            # Remover username ao editar
             del self.fields['username']
+        else:
+            # Ao criar usuário, senha é obrigatória
+            self.fields['password1'].required = True
+            self.fields['password2'].required = True
 
-        # Se não houver senha preenchida, não validamos
-        if not instance or not instance.password:
-            del self.fields['password1']
-            del self.fields['password2']
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        password = self.cleaned_data.get('password1')
+        if password:
+            user.set_password(password)
+        if commit:
+            user.save()
+        return user
 
