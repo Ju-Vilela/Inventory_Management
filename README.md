@@ -59,3 +59,8 @@ pip install -r requirements.txt
 ```bash
 python manage.py runserver
 ```
+
+```bash
+user:     project_usuario
+password: inventory_management
+```
