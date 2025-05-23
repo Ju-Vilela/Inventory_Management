@@ -62,5 +62,5 @@ python manage.py runserver
 
 ```bash
 user:     project_usuario
-password: inventory_management
+password: visitante_project
 ```
