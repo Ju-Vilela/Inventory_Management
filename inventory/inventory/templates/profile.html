@@ -35,16 +35,24 @@
                     <fieldset>
                         <legend><i class="bi bi-lock"></i> Permissões</legend>
                         <div class="row">
-                            <div class="col-md-6">
-                                {% for permissao in permissoes|slice:":6" %}
-                                <p><strong>{{ forloop.counter }}.&nbsp;</strong> {{ permissao }}</p>
-                                {% endfor %}
+                            {% for grupo, colunas in permissoes.items %}
+                            <div class="mb-4">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {% for permissao in colunas.col1 %}
+                                        <p><strong>{{ forloop.counter }}.</strong> {{ permissao }}</p>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {% with offset=colunas.col1|length %}
+                                        {% for permissao in colunas.col2 %}
+                                        <p><strong>{{ forloop.counter|add:offset }}.</strong> {{ permissao }}</p>
+                                        {% endfor %}
+                                        {% endwith %}
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                {% for permissao in permissoes|slice:"6:" %}
-                                <p><strong>{{ forloop.counter|add:"6" }}.&nbsp;</strong> {{ permissao }}</p>
-                                {% endfor %}
-                            </div>
+                            {% endfor %}                          
                         </div>
                     </fieldset>
                     {% else %}
@@ -56,7 +64,7 @@
     </div>
 
     <!-- Card de Dados Pessoais e Senha -->
-    <div class="card form-card">
+    <div class="card form-card dados-pessoais align-items-start">
         <div class="row w-100 equal-height">
             <div class="col-md-6">
                 <!-- FORMULÁRIO DE PERFIL -->

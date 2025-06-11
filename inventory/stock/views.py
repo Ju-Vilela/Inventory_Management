@@ -10,68 +10,19 @@ from django.contrib.auth import update_session_auth_hash
 from django.core.paginator import Paginator
 from django.core.serializers.json import DjangoJSONEncoder
 import json
-from decimal import Decimal
+from django.contrib.auth.decorators import permission_required
+from math import ceil
+from django.core.exceptions import PermissionDenied
 
-
-# PERMISSÕES
-def tem_permissao_usuario(usuario, permissao):
-    return permissao in permissoes_por_cargo.get(usuario.cargo, [])
-
-class Permissoes:
-    ACESSO_TOTAL = 'Acesso Total'
-    GESTAO_PRODUTOS = 'Gestão de Produtos'
-    GESTAO_USUARIOS = 'Gestão de Usuários'
-    CONFIG_USUARIOS = 'Configurações de Usuários'
-    CADASTRAR = 'Cadastrar produtos'
-    EDITAR = 'Editar produtos'
-    ATUALIZAR_ESTOQUE = 'Atualizar estoque'
-    REGISTRAR_VENDA = 'Registrar venda'
-    ALTERAR_STATUS = 'Alterar status (ativo/inativo)'
-    HISTORICO = 'Ver histórico'
-    ALERTAS = 'Receber alertas'
-
-permissoes_por_cargo = {
-    'admin': [
-        Permissoes.ACESSO_TOTAL,
-        Permissoes.GESTAO_PRODUTOS,
-        Permissoes.GESTAO_USUARIOS,
-        Permissoes.CONFIG_USUARIOS,
-        Permissoes.CADASTRAR,
-        Permissoes.EDITAR,
-        Permissoes.ATUALIZAR_ESTOQUE,
-        Permissoes.REGISTRAR_VENDA,
-        Permissoes.ALTERAR_STATUS,
-        Permissoes.HISTORICO,
-        Permissoes.ALERTAS,
-    ],
-    'gerente': [
-        Permissoes.ACESSO_TOTAL,
-        Permissoes.GESTAO_USUARIOS,
-        Permissoes.CADASTRAR,
-        Permissoes.EDITAR,
-        Permissoes.ATUALIZAR_ESTOQUE,
-        Permissoes.REGISTRAR_VENDA,
-        Permissoes.ALTERAR_STATUS,
-        Permissoes.HISTORICO,
-        Permissoes.ALERTAS,
-    ],
-    'vendedor': [
-        Permissoes.EDITAR,
-        Permissoes.ATUALIZAR_ESTOQUE,
-        Permissoes.HISTORICO,
-        Permissoes.ALERTAS,
-    ],
-}
-
-def permissao_necessaria(permissao):
+def permissao_necessaria(codename):
     def decorator(view_func):
         def _wrapped_view(request, *args, **kwargs):
-            if not tem_permissao_usuario(request.user, permissao):
-                messages.error(request, "Você não tem permissão para acessar esta função.", extra_tags='warning')
-                return redirect('home')
+            if not request.user.has_perm(f'stock.{codename}'):
+                raise PermissionDenied
             return view_func(request, *args, **kwargs)
         return _wrapped_view
     return decorator
+
 
 # HISTORICO
 def registrar_log(usuario, tipo, acao, descricao, valor_anterior=None, valor_novo=None):
@@ -96,7 +47,7 @@ def home(request):
         'produtos': produtos,
         'historico': historico,
         'timestamp': datetime.now().timestamp(),
-        'pode_editar_inativos': tem_permissao_usuario(request.user, Permissoes.ALTERAR_STATUS),
+        'pode_editar_inativos': request.user.has_perm('stock.alterar_status'),
         "show_toast_inativos": request.user.is_staff and produtos_inativos_count > 0,
         'produtos_inativos_count': produtos_inativos_count
     }
@@ -123,7 +74,7 @@ def lista_produtos(request):
 
 # EDITAR PRODUTO
 @login_required
-@permissao_necessaria(Permissoes.ALTERAR_STATUS)
+@permission_required('stock.editar_produtos', raise_exception=True)
 def editar_produto(request, produto_id):
     produto = get_object_or_404(Produto, id=produto_id)
     # Salva os valores antigos antes de instanciar o formulário
@@ -146,7 +97,7 @@ def editar_produto(request, produto_id):
                     'danger' if not novo_status else 'success',
                     "Alteração de Status",
                     f"{produto.item} - {produto.marca}",
-                    valor_anterior= {'Status': v for v in valores_antigos.values()},
+                    valor_anterior= {'Status': str(valores_antigos['ativo'])},
                     valor_novo={'Status': str(novo_status)}
                 )
                 if not novo_status:
@@ -198,7 +149,7 @@ def editar_produto(request, produto_id):
 
 # DESATIVAR PRODUTO
 @login_required
-@permissao_necessaria(Permissoes.ALTERAR_STATUS)
+@permission_required('stock.alterar_status', raise_exception=True)
 def desativar_produto(request, produto_id):
     produto = get_object_or_404(Produto, id=produto_id)
 
@@ -259,7 +210,7 @@ def cadastrar_produto(request):
 
 # MOVIMENTAÇÕES
 @login_required
-@permissao_necessaria(Permissoes.ATUALIZAR_ESTOQUE)
+@permission_required('stock.entrada', raise_exception=True)
 def registrar_entrada(request):
     if request.method == 'POST':
         form = EntradaEstoqueForm(request.POST)
@@ -302,7 +253,7 @@ def registrar_entrada(request):
 
 # SAIDA
 @login_required
-@permissao_necessaria(Permissoes.REGISTRAR_VENDA)
+@permissao_necessaria('registrar_venda')
 def registrar_saida(request):
     if request.method == 'POST':
         itens_json = request.POST.get('itens_json')
@@ -411,8 +362,24 @@ def perfil(request):
     profile_form = ProfileForm(instance=user, mostrar_cargo=False)
     senha_form = AlterarSenhaForm()
 
-    permissoes_usuario = permissoes_por_cargo.get(user.cargo, [])
+    grupos = user.groups.all()
+    permissoes = user.get_group_permissions()
     historico = LogDeAcao.objects.filter(usuario=request.user).order_by('-data')[:50]
+
+    grupos_permissoes = {}
+    for grupo in grupos:
+        permissoes_grupo = grupo.permissions.all()
+        grupos_permissoes[grupo.name] = {
+            "col1": [],
+            "col2": [],
+        }
+
+        perms = [perm.name for perm in permissoes_grupo]
+        meio = ceil(len(perms) / 2)
+
+        grupos_permissoes[grupo.name]["col1"] = perms[:meio]
+        grupos_permissoes[grupo.name]["col2"] = perms[meio:]
+
 
     if request.method == 'POST':
         if 'submit_perfil' in request.POST:
@@ -458,7 +425,7 @@ def perfil(request):
         'timestamp': datetime.now().timestamp(),
         'ultimo_login': localtime(user.last_login),
         'data_criacao': localtime(user.date_joined),
-        'permissoes': permissoes_usuario,
+        'permissoes': grupos_permissoes,
     }
 
     return render(request, 'profile.html', context)

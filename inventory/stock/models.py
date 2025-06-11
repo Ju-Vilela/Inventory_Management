@@ -10,11 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import JSONField
 import json
-
-
-# CUSTOMUSER
 from django.contrib.auth.models import AbstractUser
-from django.db import models
 
 class CustomUser(AbstractUser):
     ADMIN = 'admin'
@@ -23,7 +19,7 @@ class CustomUser(AbstractUser):
 
     CARGOS = [
         (ADMIN, 'Admin'),
-        (VENDEDOR, 'vendedor'),
+        (VENDEDOR, 'Vendedor'),
         (GERENTE, 'Gerente'),
     ]
 
@@ -35,19 +31,34 @@ class CustomUser(AbstractUser):
 
     @property
     def is_manager(self):
-        return self.cargo == 'gerente'
-    
+        return self.cargo == self.GERENTE
+
     @property
     def is_admin(self):
-        return self.cargo == 'admin'
+        return self.cargo == self.ADMIN
 
     def save(self, *args, **kwargs):
-        if self.is_superuser and self.cargo != self.ADMIN:
-            self.cargo = self.ADMIN
         super().save(*args, **kwargs)
-    
-    def __str__(self):
-        return self.username
+        from django.contrib.auth.models import Group
+        grupo = Group.objects.filter(name=self.cargo).first()
+        if grupo:
+            self.groups.set([grupo])
+
+    class Meta:
+        permissions = [
+            ("acesso_total", "Acesso Total"),
+            ("gestao_produtos", "Gestão de Produtos"),
+            ("gestao_usuarios", "Gestão de Usuários"),
+            ("config_usuarios", "Configurações de Usuários"),
+            ("cadastrar_produtos", "Cadastrar produtos"),
+            ("editar_produtos", "Editar produtos"),
+            ("entrada", "Entrada de estoque"),
+            ("saida", "Saída de Produtos"),
+            ("alterar_status", "Alterar status (ativo/inativo)"),
+            ("ver_historico", "Ver histórico"),
+            ("receber_alertas", "Receber alertas"),
+        ]
+
 
 # PRODUTO
 class Produto(models.Model):

@@ -68,7 +68,7 @@
     font-size: 1.4rem;
     font-weight: bold;
     color: var(--primary);
-    margin-bottom: 1rem;
+    margin-bottom: 10%;
 }
 
 .info-card p {
@@ -160,7 +160,7 @@
 
 
 /* Estilo para as permissões (somente visual) */
-.permissao {
+.permissoes {
     background: var(--bg-fieldset);
     padding: 1rem;
     border-radius: 1rem;
@@ -168,13 +168,14 @@
     font-weight: bold;
 }
 
-.permissao span {
+.permissoes span {
     display: block;
     margin: 0.6rem 0;
 }
 
-legend {
+.permissoes legend {
     font-weight: bold;
+    margin-bottom: 5% !important;
 }
 
 .dados-pessoais-senhas,
