@@ -13,6 +13,7 @@ import json
 from django.contrib.auth.decorators import permission_required
 from math import ceil
 from django.core.exceptions import PermissionDenied
+from django.contrib.auth import get_user_model
 
 def permissao_necessaria(codename):
     def decorator(view_func):
@@ -53,6 +54,7 @@ def home(request):
     }
     return render(request, 'home.html', context)
 
+
 # LOGIN PAGE
 def login_view(request):
     form = CustomLoginForm(request, data=request.POST or None)
@@ -61,6 +63,7 @@ def login_view(request):
         login(request, user)
         return redirect('home')
     return render(request, 'registration/login.html', {'form': form})
+
 
 # PRODUCTS LIST
 @login_required
@@ -355,6 +358,7 @@ def listar_movimentacoes(request):
     }
     return render(request, 'movimentacao.html', context)
 
+
 # PERFIL PAGE
 @login_required
 def perfil(request):
@@ -384,9 +388,23 @@ def perfil(request):
     if request.method == 'POST':
         if 'submit_perfil' in request.POST:
             profile_form = ProfileForm(request.POST, instance=user, mostrar_cargo=False)
+            User = get_user_model()
 
             if profile_form.is_valid():
+                user_antigo = User.objects.get(pk=user.pk)
+                dados_anteriores = {field: getattr(user_antigo, field) for field in profile_form.changed_data}
+
                 profile_form.save()
+                novos_dados = {field: getattr(user, field) for field in profile_form.changed_data}
+                if dados_anteriores:
+                    registrar_log(
+                        usuario=request.user,
+                        tipo='info',
+                        acao='Alteração de Dados Pessoais',
+                        descricao='Usuário atualizou dados do perfil',
+                        valor_anterior=dados_anteriores,
+                        valor_novo=novos_dados
+                    )
                 messages.success(request, 'Dados atualizados com sucesso!', extra_tags='success')
                 return redirect('profile')
             else:
@@ -409,6 +427,14 @@ def perfil(request):
                 user.set_password(nova_senha)
                 user.save()
                 update_session_auth_hash(request, user)
+                registrar_log(
+                    usuario=request.user,
+                    tipo='info',
+                    acao='Alteração de Senha',
+                    descricao='Senha de acesso alterada pelo usuário',
+                    valor_anterior=None,
+                    valor_novo=None
+                )
                 messages.success(request, 'Senha alterada com sucesso!')
                 return redirect('profile')
 

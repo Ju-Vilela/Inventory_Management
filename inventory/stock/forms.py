@@ -1,10 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from .models import EntradaEstoque, SaidaEstoque, Produto, CustomUser
-from decimal import Decimal
-from django.core.exceptions import ValidationError
 from decimal import Decimal, InvalidOperation
-from django.core.exceptions import ValidationError
 import re
 
 # LOGIN FORM
@@ -302,6 +299,7 @@ class AlterarSenhaForm(forms.Form):
         confirmar = cleaned_data.get("confirmar_senha")
         if nova and confirmar and nova != confirmar:
             raise forms.ValidationError("As senhas não coincidem.")
+        
 
 # CREATE USUARIO FORM
 class UsuarioCreateForm(UserCreationForm):

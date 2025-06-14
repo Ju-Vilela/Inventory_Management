@@ -19,7 +19,7 @@
         <div class="col-md-5">
             <!-- Card de Informações da Conta -->
             <div class="card info-card">
-                <h3 class="name">Informações da Conta</h3>
+                <h3 class="name"><i class="bi bi-person-gear"></i> Informações da Conta</h3>
                 <p><i class="bi bi-envelope-fill"></i><span class="property">Email:</span> {{ usuario.email }}</p>
                 <p><i class="bi bi-briefcase-fill"></i><span class="property">Cargo:</span> {{ usuario.cargo }}</p>
                 <p><i class="bi bi-clock-fill"></i><span class="property">Último Login:</span> {{ usuario.last_login|date:"d.m.Y h:i:s" }}</p>
@@ -33,7 +33,7 @@
                 <div class="permissoes">
                     {% if permissoes %}
                     <fieldset>
-                        <legend><i class="bi bi-lock"></i> Permissões</legend>
+                        <legend><i class="bi bi-unlock2-fill"></i> Permissões</legend>
                         <div class="row">
                             {% for grupo, colunas in permissoes.items %}
                             <div class="mb-4">
@@ -64,50 +64,51 @@
     </div>
 
     <!-- Card de Dados Pessoais e Senha -->
-    <div class="card form-card dados-pessoais align-items-start">
-        <div class="row w-100 equal-height">
-            <div class="col-md-6">
-                <!-- FORMULÁRIO DE PERFIL -->
-                <form method="post" class="perfil-form">
+    <div class="card form-card dados-pessoais">
+        <div class="row w-100" style="min-height: 100%;">
+            
+            <!-- FORMULÁRIO DE PERFIL -->
+            <div class="col-md-6 d-flex flex-column">
+                <form method="post" class="perfil-form d-flex flex-column flex-grow-1">
                     {% csrf_token %}
-                    <fieldset>
+                    <fieldset class="flex-grow-1 d-flex flex-column">
                         <legend><i class="bi bi-person-fill"></i> Dados Pessoais</legend>
                         <hr>
                         {% for field in profile_form %}
-                            <div class="mb-3">
-                                <label for="{{ field.id_for_label }}">
-                                    <strong>{{ field.label }}</strong>
-                                    {% if field.help_text %}
-                                        <i class="bi bi-question-circle-fill help-tooltip" data-bs-toggle="tooltip" data-bs-placement="right"
-                                            data-bs-title="{{ field.help_text|striptags }}" style="font-size: 14px;"></i>
-                                    {% endif %}
-                                </label>
-                                {{ field }}
-                            </div>                        
-                        {% endfor %}
-                        <button type="submit" name="submit_perfil" class="btn-blue">Salvar Dados</button>
-                    </fieldset>
-                </form>                
-            </div>
-            
-            <div class="col-md-6">
-            <!-- FORMULÁRIO DE SENHA -->
-                <form method="post" class="senha-form mt-4">
-                    {% csrf_token %}
-                    <fieldset>
-                        <div class="alteracao-senha">
-                            <legend><i class="bi bi-key-fill"></i> Alterar Senha</legend>
-                            <hr>
-                            <div class="mb-3">
-                                {{ senha_form.as_p }}
-                            </div>
-                            <button type="submit" name="submit_senha" class="btn-blue">Alterar Senha</button>
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}">
+                                <strong>{{ field.label }}</strong>
+                                {% if field.help_text %}
+                                <i class="bi bi-question-circle-fill help-tooltip" data-bs-toggle="tooltip"
+                                    data-bs-placement="right" data-bs-title="{{ field.help_text|striptags }}"
+                                    style="font-size: 14px;"></i>
+                                {% endif %}
+                            </label>
+                            {{ field }}
                         </div>
+                        {% endfor %}
+                        <button type="submit" name="submit_perfil" class="btn-blue mt-auto">Salvar Dados</button>
+                    </fieldset>
+                </form>
+            </div>
+
+            <!-- FORMULÁRIO DE SENHA -->
+            <div class="col-md-6 d-flex flex-column">
+                <form method="post" class="senha-form d-flex flex-column flex-grow-1">
+                    {% csrf_token %}
+                    <fieldset class="flex-grow-1 d-flex flex-column">
+                        <legend><i class="bi bi-shield-lock-fill"></i> Alterar Senha</legend>
+                        <hr>
+                        <div class="mb-3 flex-grow-1">
+                            {{ senha_form.as_p }}
+                        </div>
+                        <button type="submit" name="submit_senha" class="btn-blue mt-auto">Alterar Senha</button>
                     </fieldset>
                 </form>
             </div>
         </div>
-    </div>
+    </div>    
+    
 
     <!-- Card de Histórico de Ações -->
     <div class="row w-100 equal-height">

@@ -116,9 +116,9 @@
 }
 
 /* Estilo para os campos do formulário */
-.perfil-form input,
-.perfil-form select,
-.perfil-form textarea {
+.perfil-form input, .senha-form input,
+.perfil-form select, .senha-form select,
+.perfil-form textarea, .senha-form textarea {
     width: 100%;
     padding: 0.8rem;
     margin: 0.6rem 0;
@@ -138,14 +138,14 @@
     /*min-height: 100%;*/
 }
 
-.perfil-form legend {
+.perfil-form legend, .senha-form legend {
     font-size: 1.2rem;
     font-weight: bold;
     margin-bottom: 1rem;
     color: var(--primary);
 }
 
-.perfil-form label {
+.perfil-form label, .senha-form label {
     margin-bottom: 0.5rem;
     font-weight: 600;
 }
@@ -154,8 +154,17 @@
     margin-bottom: 1rem;
 }
 
-.perfil-form input {
+.perfil-form input,
+.senha-form input {
     margin: 0;
+}
+
+.perfil-form button.btn-blue,
+.senha-form button.btn-blue {
+    width: 80%;
+    align-self: center;
+    align-content: baseline;
+    margin-top: 3%;
 }
 
 
