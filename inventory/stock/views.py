@@ -14,6 +14,7 @@ from django.contrib.auth.decorators import permission_required
 from math import ceil
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import get_user_model
+from django.db.models import OuterRef, Subquery
 
 def permissao_necessaria(codename):
     def decorator(view_func):
@@ -52,7 +53,7 @@ def home(request):
         "show_toast_inativos": request.user.is_staff and produtos_inativos_count > 0,
         'produtos_inativos_count': produtos_inativos_count
     }
-    return render(request, 'home.html', context)
+    return render(request, 'products/home.html', context)
 
 
 # LOGIN PAGE
@@ -90,8 +91,12 @@ def editar_produto(request, produto_id):
         form = ProdutoForm(request.POST, instance=produto)
 
         if form.is_valid():
+
+            nova_categoria = form.cleaned_data.get('nova_categoria')
+            if nova_categoria:
+                produto.categoria = nova_categoria
+
             novo_status = form.cleaned_data.get('ativo')
-    
             if form.changed_data and 'ativo' in form.changed_data:
                 # Se o status foi alterado, registramos a mudança:
                 form.save()
@@ -147,7 +152,7 @@ def editar_produto(request, produto_id):
         'editando': True,
         'produto': produto
     }
-    return render(request, 'products.html', context)
+    return render(request, 'products/products.html', context)
 
 
 # DESATIVAR PRODUTO
@@ -209,7 +214,7 @@ def cadastrar_produto(request):
     else:
         form = ProdutoForm()
 
-    return render(request, 'products.html', {'form': form})
+    return render(request, 'products/products.html', {'form': form})
 
 # MOVIMENTAÇÕES
 @login_required
@@ -228,7 +233,7 @@ def registrar_entrada(request):
                 "Cadastro de Entrada",
                 f"{entrada.produto} | Qnt. {entrada.quantidade} - Validade: {entrada.validade} | R$ {entrada.preco_unitario} {entrada.observacoes}"
             )
-            return redirect('home')
+            return redirect('movimentacoes')
         else:
             for field in form:
                 for error in field.errors:
@@ -247,7 +252,7 @@ def registrar_entrada(request):
             entrada.total = total.amount  # só o número
         else:
             entrada.total = 0
-    return render(request, 'movimentacao/entradas.html', {
+    return render(request, 'movement/entradas.html', {
         'form': form,
         'produtos_json': json.dumps(list(produtos), cls=DjangoJSONEncoder),
         'entradas': entradas,
@@ -262,13 +267,13 @@ def registrar_saida(request):
         itens_json = request.POST.get('itens_json')
         if not itens_json:
             messages.error(request, "Nenhum item adicionado!")
-            return redirect('movimentacao/saidas.html')
+            return redirect('saidas')
 
         try:
             itens = json.loads(itens_json)
         except json.JSONDecodeError:
             messages.error(request, "Erro ao processar os itens!")
-            return redirect('movimentacao/saidas.html')
+            return redirect('saidas')
 
         form = SaidaForm(request.POST)
         if form.is_valid():
@@ -278,11 +283,12 @@ def registrar_saida(request):
             for item in itens:
                 produto = Produto.objects.get(id=item['produto_id'])
                 quantidade = int(item['quantidade'])
-                preco_unitario = item.get('preco_unitario', produto.preco)
+                ultima_entrada = EntradaEstoque.objects.filter(produto=produto).order_by('-data').first()
+                preco_unitario = ultima_entrada.preco_unitario.amount if ultima_entrada and ultima_entrada.preco_unitario else produto.preco
 
                 if produto.estoque < quantidade:
                     messages.error(request, f"Estoque insuficiente para o produto {produto.item}!")
-                    return redirect('movimentacao/saidas.html')
+                    return redirect('saidas')
 
                 valor_total += preco_unitario * quantidade
                 produtos_objs[produto.id] = (produto, quantidade, preco_unitario)
@@ -330,7 +336,7 @@ def registrar_saida(request):
                 "Cadastro de Saída",
                 f"Produtos: {produtos_str}. Valor total: {saida.valor_total}"
             )
-            return redirect('home')
+            return redirect('movimentacoes')
         else:
             messages.error(request, "Erro ao salvar o formulário!", extra_tags='danger')
             for field in form:
@@ -339,12 +345,21 @@ def registrar_saida(request):
             for error in form.non_field_errors():
                 messages.error(request, error, extra_tags='danger')
 
-    produtos = Produto.objects.filter(ativo=True).values('id', 'item', 'preco', 'estoque')
+    ultima_entrada_subquery = EntradaEstoque.objects.filter(
+        produto=OuterRef('pk')
+    ).order_by('-data').values('preco_unitario')[:1]
+
+    produtos = Produto.objects.annotate(
+        preco_entrada=Subquery(ultima_entrada_subquery)
+    ).values('id', 'item', 'estoque', 'preco', 'preco_entrada')
+    
     context = {
         'form': SaidaForm(),
         'produtos_json': json.dumps(list(produtos), cls=DjangoJSONEncoder),
     }
-    return render(request, 'movimentacao/saidas.html', context)
+    return render(request, 'movement/saidas.html', context)
+
+
 
 @login_required
 def listar_movimentacoes(request):
@@ -356,7 +371,7 @@ def listar_movimentacoes(request):
         'saidas': saidas,
         'timestamp': datetime.now().timestamp(),
     }
-    return render(request, 'movimentacao.html', context)
+    return render(request, 'movement/movimentacoes.html', context)
 
 
 # PERFIL PAGE
@@ -454,7 +469,7 @@ def perfil(request):
         'permissoes': grupos_permissoes,
     }
 
-    return render(request, 'profile.html', context)
+    return render(request, 'user/profile.html', context)
 
 
 
@@ -472,7 +487,7 @@ def users(request):
         'form': form,
         'timestamp': datetime.now().timestamp()
     }
-    return render(request, 'users.html', context)
+    return render(request, 'user/users.html', context)
 
 
 # CRIAR USUARIO
@@ -501,7 +516,7 @@ def add_user(request):
         form = UsuarioCreateForm()
 
     usuarios = CustomUser.objects.all()
-    return render(request, 'users.html', {'form': form, 'usuarios': usuarios})
+    return render(request, 'user/users.html', {'form': form, 'usuarios': usuarios})
 
 # EDITAR USUARIO
 def edit_user(request, id):
@@ -557,7 +572,7 @@ def edit_user(request, id):
         form = UsuarioCreateForm(instance=usuario)
     
 
-    return render(request, 'editUser.html', {'form': form, 'usuario': usuario})
+    return render(request, 'user/editUser.html', {'form': form, 'usuario': usuario})
 
 # DESATIVAR USUARIO
 @login_required

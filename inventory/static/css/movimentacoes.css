@@ -6,6 +6,17 @@ body.light #tabela-saida {
     color: #333;
 }
 
+ul#movimentacaoTabs{
+    border: none;
+}
+
+ul#movimentacaoTabs button {
+    background-color: transparent;
+    color: inherit;
+    padding: 10px 50px;
+    border-bottom: none;
+}
+
 #tabela-saida {
     border: 1px solid #ccc !important;
 }

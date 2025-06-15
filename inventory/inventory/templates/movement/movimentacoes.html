@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Movimentações{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}?v={{ timestamp }}">
+<link rel="stylesheet" href="{% static 'css/movimentacoes.css' %}?v={{ timestamp }}">
+{% endblock %}
+
+{% block content %}
+<header class="main-header">
+    <h1>Movimentações</h1>
+    <div class="actions d-flex gap-2 flex-wrap">
+        <a href="{% url 'entradas' %}">
+            <button class="btn btn-blue">
+                <i class="icon bi bi-node-plus-fill" style="rotate: 180deg;"></i>&nbsp;&nbsp; Entrada
+            </button>
+        </a>
+        <a href="{% url 'saidas' %}">
+            <button class="btn btn-blue">
+                <i class="icon bi bi-node-minus-fill" style="rotate: 180deg;"></i>&nbsp;&nbsp; Saída
+            </button>
+        </a>
+    </div>
+</header>
+
+<!-- Nav Tabs -->
+<ul class="nav nav-tabs mt-4" id="movimentacaoTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="entradas-tab" data-bs-toggle="tab" data-bs-target="#entradas-tab-pane"
+            type="button" role="tab" aria-controls="entradas-tab-pane" aria-selected="true">Entradas</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="saidas-tab" data-bs-toggle="tab" data-bs-target="#saidas-tab-pane" type="button"
+            role="tab" aria-controls="saidas-tab-pane" aria-selected="false">Saídas</button>
+    </li>
+</ul>
+
+<!-- Tab Panes -->
+<div class="tab-content mt-3" id="movimentacaoTabsContent">
+
+    <!-- Entradas -->
+    <div class="tab-pane fade show active" id="entradas-tab-pane" role="tabpanel" aria-labelledby="entradas-tab"
+        tabindex="0">
+        <table class="product-table">
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th class="text-center">Quantidade</th>
+                    <th class="text-center">Valor</th>
+                    <th class="text-center">Tipo</th>
+                    <th class="text-center">Validade</th>
+                    <th class="text-center">Usuário</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if entradas %}
+                {% for e in entradas %}
+                <tr>
+                    <td>{{ e.produto.item }}</td>
+                    <td class="text-center">{{ e.quantidade }}</td>
+                    <td class="text-center">{{ e.preco_unitario }}</td>
+                    <td class="text-center">{{ e.tipo }}</td>
+                    <td class="text-center">{{ e.validade|date:"d.m.Y" }}</td>
+                    <td class="text-center">{{ e.usuario }}</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="6">Nenhuma entrada registrada.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Saídas -->
+    <div class="tab-pane fade" id="saidas-tab-pane" role="tabpanel" aria-labelledby="saidas-tab" tabindex="0">
+        <table class="product-table">
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th class="text-center">Quantidade</th>
+                    <th class="text-center">Total</th>
+                    <th class="text-center">Tipo</th>
+                    <th class="text-center">Data</th>
+                    <th class="text-center">Usuário</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if saidas %}
+                {% for s in saidas %}
+                {% for item in s.itens_saida.all %}
+                <tr>
+                    <td>{{ item.produto.item }}</td>
+                    <td class="text-center">{{ item.quantidade }}</td>
+                    <td class="text-center">{{ item.valor }}</td>
+                    <td class="text-center">{{ s.tipo }}</td>
+                    <td class="text-center">{{ s.data|date:"d.m.Y H:i" }}</td>
+                    <td class="text-center">{{ s.usuario }}</td>
+                </tr>
+                {% endfor %}
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="6">Nenhuma saída registrada.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+  
+{% endblock %}

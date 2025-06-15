@@ -80,6 +80,7 @@
             {% if editando %}Salvar Alterações{% else %}Cadastrar Produto{% endif %}
         </button>
     </div>
+    
 </form>
 {% endblock %}
 
@@ -140,7 +141,33 @@
             });
         }
     });
-
 </script>
+
+{% if form.errors %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toastEl = document.getElementById('errorToast');
+        const toastBody = document.getElementById('errorToastBody');
+        const toast = new bootstrap.Toast(toastEl);
+
+        let errorMessages = [];
+
+        {% for field in form %}
+            {% for error in field.errors %}
+                errorMessages.push("{{ field.label }}: {{ error|escapejs }}");
+            {% endfor %}
+        {% endfor %}
+
+        {% for error in form.non_field_errors %}
+            errorMessages.push("{{ error|escapejs }}");
+        {% endfor %}
+
+        if (errorMessages.length > 0) {
+            toastBody.innerHTML = errorMessages.join('<br>');
+            toast.show();
+        }
+    });
+</script>
+{% endif %}
 
 {% endblock %}

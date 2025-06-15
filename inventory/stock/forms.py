@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from .models import EntradaEstoque, SaidaEstoque, Produto, CustomUser
 from decimal import Decimal, InvalidOperation
+from datetime import date, timedelta
+from django.core.exceptions import ValidationError
 import re
 
 # LOGIN FORM
@@ -56,7 +58,7 @@ class ProdutoForm(forms.ModelForm):
     )
 
     preco = forms.DecimalField(
-        required=False,
+        required=True,
         widget=forms.NumberInput(attrs={
             'class': 'form-control',
             'placeholder': 'Preço',
@@ -104,8 +106,8 @@ class ProdutoForm(forms.ModelForm):
     def clean_preco(self):
         preco = self.cleaned_data.get('preco')
 
-        if preco is None:
-            return Decimal('0.00')
+        if preco in [None, '', 0, Decimal('0.00')]:
+            raise forms.ValidationError("O preço não pode ser vazio ou zero.")
 
         if isinstance(preco, str):
             # Remove tudo que não for número ou vírgula/ponto
@@ -113,14 +115,22 @@ class ProdutoForm(forms.ModelForm):
             preco = preco.replace('.', '').replace(',', '.')
 
         try:
-            return Decimal(preco)
+            preco_decimal = Decimal(preco)
         except (ValueError, TypeError, InvalidOperation):
             raise forms.ValidationError("Preço inválido.")
+
+        if preco_decimal <= 0:
+            raise forms.ValidationError("O preço deve ser maior que zero.")
+
+        return preco_decimal
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         categorias = Produto.objects.values_list('categoria', flat=True).distinct()
         self.fields['categoria'].choices = [('', 'Selecione uma categoria')] + [(c, c) for c in categorias]
+
+        data_minima = (date.today() + timedelta(days=7)).strftime('%Y-%m-%d')
+        self.fields['validade'].widget.attrs['min'] = data_minima
 
         if not self.is_bound and self.instance and self.instance.pk:
             preco = self.instance.preco
@@ -178,13 +188,34 @@ class EntradaEstoqueForm(forms.ModelForm):
         cleaned_data = super().clean()
         tipo = cleaned_data.get("tipo")
         tipo_personalizado = cleaned_data.get("tipo_personalizado")
+        produto = cleaned_data.get("produto")
+        quantidade = cleaned_data.get("quantidade")
 
         if tipo == "Outro" and tipo_personalizado:
             cleaned_data["tipo"] = tipo_personalizado  # Substitui pelo valor digitado
         elif tipo == "Outro" and not tipo_personalizado:
-            self.add_error("tipo_personalizado", "Por favor, informe um tipo personalizado.")
+            raise forms.ValidationError("Por favor, informe um tipo personalizado.")
+        
+        # Validação da quantidade considerando o estoque mínimo
+        if produto and quantidade is not None:
+            estoque_apos_entrada = produto.estoque + quantidade
+            if estoque_apos_entrada < produto.estoque_minimo:
+                diferenca = produto.estoque_minimo - produto.estoque
+                self.add_error(
+                    'quantidade',
+                    f'A quantidade informada deve ser suficiente para alcançar o estoque mínimo ({produto.estoque_minimo}). '
+                    f'Adicione pelo menos {diferenca} unidades.'
+                )
 
         return cleaned_data  
+    
+    def clean_validade(self):
+        validade = self.cleaned_data.get('validade')
+        if validade:
+            data_minima = date.today() + timedelta(days=7)
+            if validade < data_minima:
+                raise ValidationError(f"A validade deve ser pelo menos {data_minima.strftime('%d/%m/%Y')}.")
+        return validade
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -192,14 +223,24 @@ class EntradaEstoqueForm(forms.ModelForm):
         if preco_unitario:
             try:
                 self.data = self.data.copy()
-                preco_unitario = preco_unitario.replace("R$", "").replace(".", "").replace(",", ".").strip()
+
+                # Remove símbolo R$ e espaços
+                preco_unitario = preco_unitario.replace("R$", "").strip()
+
+                # Se tiver vírgula, assume formato BR (ex: 4.000,50)
+                if "," in preco_unitario:
+                    preco_unitario = preco_unitario.replace(".", "").replace(",", ".")
+                # Se tiver ponto mas não vírgula, assume formato internacional (ex: 4.00)
+                elif "." in preco_unitario:
+                    preco_unitario = preco_unitario
+
                 self.data['preco_unitario'] = str(Decimal(preco_unitario))
             except (InvalidOperation, ValueError):
                 pass
 
+
 # SAIDA FORM
 class SaidaForm(forms.ModelForm):
-    # Campo auxiliar para adicionar produtos à lista (não será salvo diretamente)
     produto = forms.ModelChoiceField(
         queryset=Produto.objects.filter(ativo=True).order_by('item'),
         empty_label="Selecione um produto",

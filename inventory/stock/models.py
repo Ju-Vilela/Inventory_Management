@@ -120,6 +120,7 @@ class Produto(models.Model):
     def __str__(self):
         return self.item
 
+
 # MOVIMENTAÇÃO
 class Movimentacao(models.Model):
     TIPO_CHOICES = [

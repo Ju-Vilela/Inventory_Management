@@ -101,8 +101,8 @@
             const produto = produtos.find(p => p.id == selectedId);
 
             if (produto) {
-                const preco = parseFloat(produto.preco).toFixed(2).replace('.', ',');
-                $('input[name="preco_unitario"]').val(preco).prop('readonly', true);
+                const precoFormatado = parseFloat(produto.preco_entrada).toFixed(2).replace('.', ',');
+                $('input[name="preco_unitario"]').val(produto.preco_entrada).attr('data-exibicao', precoFormatado).prop('readonly', true);
 
                 $badge.html(`Disponível: <strong>${produto.estoque}</strong>`).fadeIn();
             } else {
@@ -124,7 +124,7 @@
                 produto = produtos.find(p => p.id == prodId),
                 estoque = produto ? produto.estoque : 0,
                 qtd = parseInt($('#id_quantidade_individual').val(), 10),
-                valorU = produto ? parseFloat(produto.preco) : NaN;
+                valorU = produto ? parseFloat(produto.preco_entrada) : NaN;
             
             if (!prodId || !qtd || qtd <= 0 || isNaN(valorU)) {
                 document.dispatchEvent(new CustomEvent('show-message', {
