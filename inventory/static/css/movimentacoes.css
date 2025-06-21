@@ -6,17 +6,6 @@ body.light #tabela-saida {
     color: #333;
 }
 
-ul#movimentacaoTabs{
-    border: none;
-}
-
-ul#movimentacaoTabs button {
-    background-color: transparent;
-    color: inherit;
-    padding: 10px 50px;
-    border-bottom: none;
-}
-
 #tabela-saida {
     border: 1px solid #ccc !important;
 }
@@ -31,4 +20,26 @@ ul#movimentacaoTabs button {
 #tabela-saida tfoot {
     border: 1px solid #ccc !important;
     background-color: #182442;
+}
+
+/* TABS */
+ul#movimentacaoTabs {
+    border: none;
+}
+
+ul#movimentacaoTabs button {
+    background-color: transparent;
+    color: inherit;
+    padding: 10px 50px;
+    border: none;
+}
+
+ul#movimentacaoTabs button.nav-link.active {
+    border: 1.5px solid var(--main-color);
+    border-bottom: 2px solid transparent;
+}
+
+ul#movimentacaoTabs button.nav-link:not(ul#movimentacaoTabs button.active):hover {
+    border: none;
+    border-bottom: 2px solid var(--dark-main-color);
 }
