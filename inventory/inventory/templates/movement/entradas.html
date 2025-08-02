@@ -35,13 +35,13 @@
         <div class="row g-3 mb-3">
             <div class="col-md-3">
                 <label for="id_validade" class="form-label">Validade</label>
-                    {{ form.validade }}
-                </div>
+                {{ form.validade }}
+            </div>
             <div class="col-md-4">
-                    <label for="id_tipo" class="form-label">Tipo de Entrada</label>
-                    <i class="bi bi-question-circle-fill help-tooltip" data-bs-toggle="tooltip" data-bs-placement="right"
-                        data-bs-title="Caso nenhuma das opções, deixe a seleção em branco e digite ao lado a especificação."></i>
-                    {{ form.tipo }}
+                <label for="id_tipo" class="form-label">Tipo de Entrada</label>
+                <i class="bi bi-question-circle-fill help-tooltip" data-bs-toggle="tooltip" data-bs-placement="right"
+                    data-bs-title="Caso nenhuma das opções, deixe a seleção em branco e digite ao lado a especificação."></i>
+                {{ form.tipo }}
             </div>
             <div class="col-md-4 d-none" id="id_tipo_personalizado">
                 <label for="id_tipo_personalizado" class="form-label">Outro Tipo</label>
@@ -49,7 +49,6 @@
             </div>
         </div>
 
-        <!-- Detalhes dinâmicos do produto selecionado -->
         <div id="detalhes-produto" class="card p-3 mb-2 d-none">
             <div class="row">
                 <div class="col-3">
@@ -72,7 +71,7 @@
             {{ form.observacoes }}
         </div>
         <div class="mb-3 d-flex justify-content-between">
-        <a href="{% url 'movimentacoes' %}" class="btn btn-secondary">Cancelar</a>
+            <a href="{% url 'movimentacoes' %}" class="btn btn-secondary">Cancelar</a>
             <button type="submit" class="btn btn-blue">Registrar Entrada</button>
         </div>
     </form>
@@ -80,7 +79,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- JS do jQuery e do Select2 -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
@@ -115,7 +113,7 @@
     const spanPreco = document.getElementById('preco-produto');
     console.log(produtos, spanPreco);
     $('.form-select2').on('change', function () {
-        
+
         const produtoId = this.value;
         const produto = produtos.find(p => p.id == produtoId);
 
@@ -129,7 +127,7 @@
             detalhesDiv.classList.add('d-none');
         }
     });
-    
+
     const tipoSelect = document.getElementById('id_tipo');
     const tipoPersonalizadoInput = document.getElementById('id_tipo_personalizado');
 

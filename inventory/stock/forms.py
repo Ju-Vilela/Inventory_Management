@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from .models import EntradaEstoque, SaidaEstoque, Produto, CustomUser
+from .models import EntradaEstoque, SaidaEstoque, Produto, CustomUser, ItemEntrada, ItemSaida
 from decimal import Decimal, InvalidOperation
 from datetime import date, timedelta
 from django.core.exceptions import ValidationError
@@ -59,9 +59,10 @@ class ProdutoForm(forms.ModelForm):
 
     preco = forms.DecimalField(
         required=True,
+        label="Preço Referencial",
         widget=forms.NumberInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Preço',
+            'placeholder': '00.00',
             'step': '0.01'
         })
     )
@@ -129,8 +130,8 @@ class ProdutoForm(forms.ModelForm):
         categorias = Produto.objects.values_list('categoria', flat=True).distinct()
         self.fields['categoria'].choices = [('', 'Selecione uma categoria')] + [(c, c) for c in categorias]
 
-        data_minima = (date.today() + timedelta(days=7)).strftime('%Y-%m-%d')
-        self.fields['validade'].widget.attrs['min'] = data_minima
+        # data_minima = (date.today() + timedelta(days=7)).strftime('%Y-%m-%d')
+        # self.fields['validade'].widget.attrs['min'] = data_minima
 
         if not self.is_bound and self.instance and self.instance.pk:
             preco = self.instance.preco

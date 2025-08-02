@@ -35,16 +35,27 @@
             <button id="themeToggle" class="btn-icon" title="Toggle theme">
                 <i class="bi bi-moon-stars"></i>
             </button>
+            <a href="{% url 'home' %}" class="link-site text-center text-wrap">
+                <div>
+                        <img src="{% static 'img/favicon.png' %}" id="nav-logo"  />
+                        <h6 class="fw-light fst-italic font-monospace">Inventory Management</h6>
+                </div>
+            </a>
             <nav>
                 <ul>
                     <a href="{% url 'home' %}">
                         <li class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-                            <i class="icon bi bi-list-ul"></i> Produtos
+                            <i class="icon bi bi-box-seam-fill"></i> Home
+                        </li>
+                    </a>
+                    <a href="{% url 'catalogo' %}">
+                        <li class="{% if request.resolver_match.url_name == 'catalogo' %}active{% endif %}">
+                            <i class="icon bi bi-list-columns-reverse"></i> Catálogo
                         </li>
                     </a>
                     <a href="{% url 'movimentacoes' %}">
                         <li class="{% if request.resolver_match.url_name == 'movimentacoes' %}active{% endif %}">
-                            <i class="icon bi bi-activity"></i> Movimentações
+                            <i class="icon bi bi-activity fw-bold"></i> Movimentações
                         </li>
                     </a>
                     <a href="{% url 'profile' %}">

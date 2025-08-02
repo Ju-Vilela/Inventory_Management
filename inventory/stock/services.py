@@ -1,3 +1,7 @@
+
+# from django.db.models import Sum
+# from .models import ItemEntrada, ItemSaida
+
 def atualizar_estoque(produto, quantidade, tipo):
     if tipo == 'Entrada':
         produto.estoque += quantidade
@@ -9,3 +13,9 @@ def atualizar_estoque(produto, quantidade, tipo):
         raise ValueError("Tipo de movimentação inválido. Use 'Entrada' ou 'Saída'.")
 
     produto.save()
+
+
+# def calcular_estoque_atual(produto_id):
+#     entradas = ItemEntrada.objects.filter(produto_id=produto_id).aggregate(total=Sum('quantidade'))['total'] or 0
+#     saidas = ItemSaida.objects.filter(produto_id=produto_id).aggregate(total=Sum('quantidade'))['total'] or 0
+#     return entradas - saidas

@@ -64,9 +64,8 @@
             </tbody>
             <tfoot style="display: none;">
                 <tr style="border-top: 2px solid #dee2e6;">
-                    <td colspan="3" class="fw-bold">Total Geral:</td>
-                    <td></td>
-                    <td id="total-geral" class="text-end fw-bold">0,00</td>
+                    <td colspan="4">Total Geral:</td>
+                    <td id="total-geral" class="text-end">0,00</td>
                 </tr>
             </tfoot>
         </table>
@@ -177,10 +176,10 @@
 
             // Limpa inputs
             prodSel.val(null).trigger('change');
-            $('#id_quantidade').val('');
+            $('#id_quantidade_individual').val('');
             $('input[name="preco_unitario"]').val('');
 
-            $('#id_tipo').prop('readonly', true);
+            $('#id_tipo').attr('disabled', 'disabled');
             $('#id_tipo').addClass('text-secondary');
             atualizarJSON(); // Atualiza o JSON depois de mexer na tabela
         });
@@ -190,7 +189,7 @@
             // Se não tiver mais itens na tabela, libera o campo tipo
             if ($('#tabela-saida tbody tr').length === 0) {
                 $('#id_tipo').addClass('text-body');
-                $('#id_tipo').prop('readonly', false);
+                $('#id_tipo').removeAttr('disabled');
             }
             atualizarJSON();
         });

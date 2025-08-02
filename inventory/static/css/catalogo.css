@@ -20,6 +20,7 @@
 
 .product-table thead {
     border-bottom: 1px solid var(--main-color);
+    text-align: center;
 }
 
 .product-table th,
@@ -28,6 +29,7 @@
     padding-right: 20px;
     text-align: left;
     position: relative;
+    text-align: center;
 }
 
 body.dark tbody .product-table tr:hover {

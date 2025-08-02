@@ -4,7 +4,7 @@ from django.contrib.auth import login
 from django.contrib import messages
 from datetime import datetime
 from django.utils.timezone import localtime
-from .models import Produto, CustomUser, LogDeAcao, ItemSaida, Movimentacao, EntradaEstoque, SaidaEstoque
+from .models import Produto, CustomUser, LogDeAcao, ItemSaida, Movimentacao, EntradaEstoque, SaidaEstoque, ItemEntrada
 from .forms import ProdutoForm, ProfileForm, CustomLoginForm, UsuarioCreateForm, AlterarSenhaForm, EntradaEstoqueForm, SaidaForm
 from django.contrib.auth import update_session_auth_hash
 from django.core.paginator import Paginator
@@ -37,11 +37,15 @@ def registrar_log(usuario, tipo, acao, descricao, valor_anterior=None, valor_nov
         valor_novo=valor_novo
     )
 
-
 # HOME PAGE
 @login_required
 def home(request):
-    produtos = Produto.objects.all()
+    return render(request, 'home.html')
+
+# CATALOGO PAGE
+@login_required
+def catalogo(request):
+    produtos = Produto.objects.all().order_by('-data_atualizacao') 
     historico = LogDeAcao.objects.filter(usuario=request.user).order_by('-data')[:50]
     produtos_inativos = Produto.objects.filter(ativo=False)
     produtos_inativos_count = produtos_inativos.count()
@@ -53,7 +57,7 @@ def home(request):
         "show_toast_inativos": request.user.is_staff and produtos_inativos_count > 0,
         'produtos_inativos_count': produtos_inativos_count
     }
-    return render(request, 'products/home.html', context)
+    return render(request, 'products/catalogo.html', context)
 
 
 # LOGIN PAGE
@@ -115,7 +119,7 @@ def editar_produto(request, produto_id):
                     msg = "Produto reativado com sucesso!"
                     extra_tags='success'
                 messages.success(request, msg, extra_tags)
-                return redirect('home')
+                return redirect('catalogo')
             
             # Após a validação, capturamos os novos valores do formulário
             alteracoes = {}
@@ -142,7 +146,7 @@ def editar_produto(request, produto_id):
                 )
 
             messages.success(request, "Produto atualizado com sucesso!", extra_tags='success')
-            return redirect('home')
+            return redirect('catalogo')
 
     else:
         form = ProdutoForm(instance=produto)
@@ -152,7 +156,7 @@ def editar_produto(request, produto_id):
         'editando': True,
         'produto': produto
     }
-    return render(request, 'products/products.html', context)
+    return render(request, 'products/produtos.html', context)
 
 
 # DESATIVAR PRODUTO
@@ -175,7 +179,7 @@ def desativar_produto(request, produto_id):
     else:
         messages.warning(request, "Este produto já está desativado.")
 
-    return redirect('home')
+    return redirect('catalogo')
 
 
 # CADASTRO PAGE
@@ -202,7 +206,7 @@ def cadastrar_produto(request):
                 "Cadastro de Produto",
                 f"{produto.item} - {produto.marca} | {produto.categoria} |  R$ {produto.preco}"
             )
-            return redirect('home')
+            return redirect('catalogo')
         else:
             if form.errors:
                 for field in form:
@@ -214,7 +218,7 @@ def cadastrar_produto(request):
     else:
         form = ProdutoForm()
 
-    return render(request, 'products/products.html', {'form': form})
+    return render(request, 'products/produtos.html', {'form': form})
 
 # MOVIMENTAÇÕES
 @login_required
@@ -469,7 +473,7 @@ def perfil(request):
         'permissoes': grupos_permissoes,
     }
 
-    return render(request, 'user/profile.html', context)
+    return render(request, 'user/perfil.html', context)
 
 
 
@@ -487,7 +491,7 @@ def users(request):
         'form': form,
         'timestamp': datetime.now().timestamp()
     }
-    return render(request, 'user/users.html', context)
+    return render(request, 'user/usuarios.html', context)
 
 
 # CRIAR USUARIO
@@ -516,7 +520,7 @@ def add_user(request):
         form = UsuarioCreateForm()
 
     usuarios = CustomUser.objects.all()
-    return render(request, 'user/users.html', {'form': form, 'usuarios': usuarios})
+    return render(request, 'user/usuarios.html', {'form': form, 'usuarios': usuarios})
 
 # EDITAR USUARIO
 def edit_user(request, id):

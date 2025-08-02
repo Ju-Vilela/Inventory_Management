@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Catálogo{% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/home.css' %}?v={{ timestamp }}">
+<link rel="stylesheet" href="{% static 'css/catalogo.css' %}?v={{ timestamp }}">
 {% endblock %}
 
 {% block content %}
     <header class="main-header">
-        <h1>Produtos</h1>
+        <h1>Catálogo de Produtos</h1>
         <div class="actions d-flex gap-2 flex-wrap">
             <div class="input-group w-auto">
                 <input type="text" class="form-control" id="buscaProdutos" placeholder="Buscar produtos..." />
@@ -27,13 +27,14 @@
     <table class="product-table">
         <thead>
             <tr>
-                <th data-column="item">Produto</th>
-                <th class="text-center" data-column="categoria">Categoria</th>
+                <th class="text-start" data-column="item">Produto</th>
                 <th data-column="marca">Marca</th>
-                <th data-column="validade">Validade</th>
-                <th data-column="vendas">Vendas</th>
+                <th class="text-center" data-column="categoria">Categoria</th>
+                <th data-column="minimo">Mínimo</th>
                 <th data-column="estoque">Estoque</th>
-                <th class="text-center" data-column="preco">Preço</th>
+                <th data-column="validade">Validade</th>
+                <!-- <th class="text-center" data-column="preco">Preço</th> -->
+                 <th data-column="atualizado">Atualizado</th>
             </tr>
         </thead>
         <tbody id="produtoTabela">
@@ -44,19 +45,20 @@
                 {% if not p.ativo and not pode_editar_inativos %} no-click{% endif %}
                 {% if not request.user.is_manager and not request.user.is_admin %} sem_permissao{% endif %}"
                 data-href="{% url 'editProduct' p.id %}" data-validade="{{ p.validade }}">
-                <td>
+                <td class="text-start">
                     {% if not p.ativo %}
                     <i class="bi bi-slash-circle-fill text-danger" title="Produto inativo"></i>
                     {% endif %}
                     &nbsp;&nbsp;
                     {{ p.item }}
                 </td>
-                <td class="text-center">{{ p.categoria }}</td>
                 <td>{{ p.marca }}</td>
+                <td>{{ p.categoria }}</td>
+                <td>{{ p.estoque_minimo }}</td>
+                <td>{{ p.estoque }}</td>
                 <td>validade</td>
-                <td>vendas</td>
-                <td class="text-center">{{ p.estoque }}</td>
-                <td class="text-end">R$ {{ p.preco|floatformat:2 }}</td>
+                <!-- <td class="text-end">R$ {{ p.preco|floatformat:2 }}</td> -->
+                <td>{{ p.data_atualizacao|date:"d.m.Y"}}</td>
             </tr>
             {% endfor %}
             {% else %}

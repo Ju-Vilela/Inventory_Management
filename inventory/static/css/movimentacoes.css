@@ -17,9 +17,16 @@ body.light #tabela-saida {
     border-bottom: none !important;
 }
 
-#tabela-saida tfoot {
+body.dark #tabela-saida tfoot {
     border: 1px solid #ccc !important;
     background-color: #182442;
+    font-weight: bold;
+}
+
+body.light #tabela-saida tfoot {
+    border: 1px solid #ccc !important;
+    background-color: #466cca;
+    color: white;
 }
 
 /* TABS */
@@ -42,4 +49,5 @@ ul#movimentacaoTabs button.nav-link.active {
 ul#movimentacaoTabs button.nav-link:not(ul#movimentacaoTabs button.active):hover {
     border: none;
     border-bottom: 2px solid var(--dark-main-color);
+    transition: none;
 }
